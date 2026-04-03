@@ -1,0 +1,402 @@
+{
+  "profiles": {
+    "claude-opus-4-5": {
+      "model": "claude-opus-4-5",
+      "n_total": 50,
+      "metacognitive_index": 0.4085,
+      "tdr_rubric": 0.9412,
+      "tdr_abstain": 0.5556,
+      "tdr_expert": 0.1667,
+      "tdr_global": 0.5545,
+      "aq_clean": 1.0,
+      "calib_delta": 0.2625,
+      "ca_clean": 0.8704,
+      "ca_mirage": 0.6078,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 1.0,
+          "clean_aq": 1.0,
+          "mirage_score": 0.6667,
+          "clean_score": 1.0,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 1.0,
+          "mirage_score": 0.0,
+          "clean_score": 0.963,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 0.1667,
+          "clean_aq": 1.0,
+          "mirage_score": 0.4222,
+          "clean_score": 0.8889,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.5556,
+          "clean_aq": 1.0,
+          "mirage_score": 0.563,
+          "clean_score": 0.963,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.875,
+          "clean_aq": 0.0,
+          "mirage_score": 0.6111,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
+    },
+    "claude-sonnet-4-5": {
+      "model": "claude-sonnet-4-5",
+      "n_total": 50,
+      "metacognitive_index": 0.5196,
+      "tdr_rubric": 0.8824,
+      "tdr_abstain": 0.7778,
+      "tdr_expert": 0.3333,
+      "tdr_global": 0.6645,
+      "aq_clean": 0.9259,
+      "calib_delta": 0.3747,
+      "ca_clean": 0.963,
+      "ca_mirage": 0.5882,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 1.0,
+          "clean_aq": 1.0,
+          "mirage_score": 0.6297,
+          "clean_score": 1.0,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 0.9444,
+          "mirage_score": 0.0,
+          "clean_score": 0.9722,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 0.3333,
+          "clean_aq": 0.8333,
+          "mirage_score": 0.5111,
+          "clean_score": 0.8889,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.7778,
+          "clean_aq": 0.8889,
+          "mirage_score": 0.6519,
+          "clean_score": 0.963,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.75,
+          "clean_aq": 0.0,
+          "mirage_score": 0.6111,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
+    },
+    "gemini-1.5-pro": {
+      "model": "gemini-1.5-pro",
+      "n_total": 50,
+      "metacognitive_index": 0.5082,
+      "tdr_rubric": 0.7059,
+      "tdr_abstain": 0.7778,
+      "tdr_expert": 0.8333,
+      "tdr_global": 0.7723,
+      "aq_clean": 0.7778,
+      "calib_delta": 0.244,
+      "ca_clean": 0.8519,
+      "ca_mirage": 0.6078,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 0.6667,
+          "clean_aq": 0.6667,
+          "mirage_score": 0.5926,
+          "clean_score": 0.7778,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 0.75,
+          "mirage_score": 0.0,
+          "clean_score": 0.8611,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 0.8333,
+          "clean_aq": 0.8333,
+          "mirage_score": 0.6111,
+          "clean_score": 0.9445,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.7778,
+          "clean_aq": 0.8889,
+          "mirage_score": 0.6519,
+          "clean_score": 0.9259,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.75,
+          "clean_aq": 0.0,
+          "mirage_score": 0.6389,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
+    },
+    "gpt-4o": {
+      "model": "gpt-4o",
+      "n_total": 50,
+      "metacognitive_index": 0.4069,
+      "tdr_rubric": 0.8235,
+      "tdr_abstain": 0.5556,
+      "tdr_expert": 0.5,
+      "tdr_global": 0.6264,
+      "aq_clean": 0.9815,
+      "calib_delta": 0.1874,
+      "ca_clean": 0.8148,
+      "ca_mirage": 0.6275,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 0.8889,
+          "clean_aq": 1.0,
+          "mirage_score": 0.642,
+          "clean_score": 0.8889,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 0.9722,
+          "mirage_score": 0.0,
+          "clean_score": 0.9352,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 0.5,
+          "clean_aq": 1.0,
+          "mirage_score": 0.4833,
+          "clean_score": 0.9445,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.5556,
+          "clean_aq": 1.0,
+          "mirage_score": 0.5778,
+          "clean_score": 0.9259,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.75,
+          "clean_aq": 0.0,
+          "mirage_score": 0.6111,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
+    },
+    "gpt-4o-mini": {
+      "model": "gpt-4o-mini",
+      "n_total": 50,
+      "metacognitive_index": 0.5741,
+      "tdr_rubric": 0.6471,
+      "tdr_abstain": 0.8889,
+      "tdr_expert": 1.0,
+      "tdr_global": 0.8453,
+      "aq_clean": 0.7593,
+      "calib_delta": 0.3028,
+      "ca_clean": 0.8519,
+      "ca_mirage": 0.549,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 0.6667,
+          "clean_aq": 0.6667,
+          "mirage_score": 0.5679,
+          "clean_score": 0.8889,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 0.75,
+          "mirage_score": 0.0,
+          "clean_score": 0.8611,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 1.0,
+          "clean_aq": 0.8333,
+          "mirage_score": 0.7056,
+          "clean_score": 0.8889,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.8889,
+          "clean_aq": 0.7778,
+          "mirage_score": 0.6519,
+          "clean_score": 0.8889,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.625,
+          "clean_aq": 0.0,
+          "mirage_score": 0.5834,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
+    },
+    "llama-3-70b": {
+      "model": "llama-3-70b",
+      "n_total": 50,
+      "metacognitive_index": 0.5376,
+      "tdr_rubric": 0.7647,
+      "tdr_abstain": 0.8889,
+      "tdr_expert": 0.8333,
+      "tdr_global": 0.829,
+      "aq_clean": 0.6481,
+      "calib_delta": 0.2462,
+      "ca_clean": 0.8148,
+      "ca_mirage": 0.5686,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 0.6667,
+          "clean_aq": 0.6667,
+          "mirage_score": 0.5556,
+          "clean_score": 0.7778,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 0.6667,
+          "mirage_score": 0.0,
+          "clean_score": 0.8241,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 0.8333,
+          "clean_aq": 0.5,
+          "mirage_score": 0.6333,
+          "clean_score": 0.7778,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.8889,
+          "clean_aq": 0.6667,
+          "mirage_score": 0.8,
+          "clean_score": 0.8519,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.875,
+          "clean_aq": 0.0,
+          "mirage_score": 0.5834,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
+    }
+  },
+  "leaderboard": [
+    [
+      "gpt-4o-mini",
+      0.5741
+    ],
+    [
+      "llama-3-70b",
+      0.5376
+    ],
+    [
+      "claude-sonnet-4-5",
+      0.5196
+    ],
+    [
+      "gemini-1.5-pro",
+      0.5082
+    ],
+    [
+      "claude-opus-4-5",
+      0.4085
+    ],
+    [
+      "gpt-4o",
+      0.4069
+    ]
+  ],
+  "global_correlation": {
+    "tdr_vs_accuracy": {
+      "r": -0.9437,
+      "p": 0.0
+    },
+    "mi_vs_accuracy": {
+      "r": -0.8051,
+      "p": 0.0066
+    }
+  },
+  "family_correlations": {
+    "confidence_inversion": {
+      "r": 0.9701,
+      "p": 0.0,
+      "n": 6
+    },
+    "control_baseline": {
+      "r": 0.0,
+      "p": 1.0,
+      "n": 6
+    },
+    "expertise_trap": {
+      "r": -0.5571,
+      "p": 0.1797,
+      "n": 6
+    },
+    "forced_abstention": {
+      "r": -0.9183,
+      "p": 0.0,
+      "n": 6
+    },
+    "over_specification": {
+      "r": 0.0,
+      "p": 1.0,
+      "n": 6
+    }
+  },
+  "effect_size_clean_vs_mirage": {
+    "cohens_d": 2.6548
+  },
+  "mi_spread": 0.1672,
+  "key_finding": "NOVEL FINDING: While global TDR-accuracy correlation is r=-0.94, within the 'control_baseline' family the correlation is r=0.00 \u2014 near zero or negative. This confirms that metacognitive monitoring and factual accuracy are dissociable cognitive faculties: a model can be highly accurate on clean tasks while systematically failing to detect expertise-level traps. Cohen's d=2.65 confirms the mirage tasks are non-trivially harder."
+}

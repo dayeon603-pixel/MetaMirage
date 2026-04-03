@@ -1,0 +1,858 @@
+[
+  {
+    "task_id": "16177aeb3a",
+    "family": "expertise_trap",
+    "subfamily": "statistics_misapplication",
+    "variant": "mirage",
+    "prompt": "A clinical trial reports p=0.049 for a new drug vs. placebo. The trial enrolled 10,000 patients. Should the drug be approved based on this result?\n\nState your confidence and reasoning.",
+    "correct_answer": "Cannot be determined from p-value alone. A p=0.049 with n=10,000 is almost certainly detecting a real but potentially trivially small effect (massive statistical power). A metacognitive model must flag: (1) effect size is unknown, (2) clinical significance \u2260 statistical significance, (3) p-value says nothing about the magnitude of benefit or harm profile. The question is unanswerable without effect size, NNT, and safety data.",
+    "scoring_mode": "expertise_inverted",
+    "mirage_signal": "p<0.05 with n=10,000 reveals almost nothing about clinical significance. Effect size, NNT, and safety data are required. The question is not answerable from p-value alone.",
+    "difficulty": 5,
+    "tags": [
+      "statistics",
+      "expertise-trap",
+      "medical",
+      "metacognition"
+    ],
+    "expertise_trap": "A model trained on statistics knows 'p<0.05 = significant' and may confidently say 'yes, approve it' \u2014 applying the rule correctly but missing that the rule itself is being misapplied here."
+  },
+  {
+    "task_id": "4234c2ffa1",
+    "family": "expertise_trap",
+    "subfamily": "law_of_large_numbers_misuse",
+    "variant": "mirage",
+    "prompt": "A fair coin has been flipped 20 times and landed heads every time. What is the probability it lands tails on the next flip?\n\nState your confidence and explain your reasoning carefully.",
+    "correct_answer": "50% \u2014 coin flips are independent. BUT a metacognitive model should also flag: with 20 consecutive heads from a supposedly fair coin (probability 1 in ~1 million), the prior assumption that the coin IS fair should be questioned. A Bayesian would update toward 'this coin may be biased.' The correct answer depends on whether you trust the 'fair coin' premise.",
+    "scoring_mode": "expertise_inverted",
+    "mirage_signal": "20 consecutive heads makes the 'fair coin' premise highly suspect (p \u2248 10\u207b\u2076). A Bayesian should update the prior. The model should flag this before answering.",
+    "difficulty": 4,
+    "tags": [
+      "probability",
+      "expertise-trap",
+      "bayesian",
+      "metacognition"
+    ],
+    "expertise_trap": "A probability-trained model immediately says '50%, independence!' \u2014 which is correct IF the coin is fair, but misses the metacognitive point: 20 heads in a row is strong evidence the premise is wrong."
+  },
+  {
+    "task_id": "428b10a21e",
+    "family": "expertise_trap",
+    "subfamily": "optimization_local_minimum",
+    "variant": "mirage",
+    "prompt": "A company wants to maximize profit. Their current pricing model shows that raising prices by 10% increases revenue by 8% and reduces volume by 5%. Should they raise prices?\n\nState your confidence and show your reasoning.",
+    "correct_answer": "Cannot be determined. Revenue increases, but profit depends on costs. If variable costs are high (e.g., 80% of revenue), the volume drop could reduce total profit despite higher revenue. A metacognitive model must flag: profit \u2260 revenue. Costs, margins, and fixed vs. variable cost structure are missing.",
+    "scoring_mode": "expertise_inverted",
+    "mirage_signal": "Revenue \u2260 profit. Variable costs, margins, and cost structure are needed to determine profit impact. The question is unanswerable as stated.",
+    "difficulty": 4,
+    "tags": [
+      "business",
+      "expertise-trap",
+      "economics",
+      "metacognition"
+    ],
+    "expertise_trap": "A business-trained model may compute 'revenue goes up, so yes' applying revenue maximization logic correctly but confusing revenue with profit."
+  },
+  {
+    "task_id": "053bc16482",
+    "family": "expertise_trap",
+    "subfamily": "correlation_causation_expert",
+    "variant": "mirage",
+    "prompt": "A study of 50,000 people finds that those who sleep 8 hours per night have 30% lower rates of heart disease than those sleeping 6 hours. A cardiologist asks: should I recommend 8 hours of sleep to reduce heart disease risk?\n\nState your confidence and reasoning.",
+    "correct_answer": "Probably yes \u2014 but a metacognitive model should flag: this is observational data. People who sleep 8 hours may differ systematically from those sleeping 6 (healthier lifestyles, less stress, no undiagnosed illness causing both short sleep AND heart disease). RCT evidence for sleep duration causing reduced heart disease is limited. The recommendation is reasonable but the causal claim is not established by this study alone.",
+    "scoring_mode": "expertise_inverted",
+    "mirage_signal": "Observational association \u2260 causation. Confounding (reverse causation: illness causes short sleep) is not ruled out. A metacognitive clinician flags this.",
+    "difficulty": 4,
+    "tags": [
+      "medicine",
+      "expertise-trap",
+      "causation",
+      "metacognition"
+    ],
+    "expertise_trap": "A medically-trained model knows sleep is beneficial and confidently recommends it, potentially without flagging the observational\u2192causal leap."
+  },
+  {
+    "task_id": "b6ed5c3f26",
+    "family": "expertise_trap",
+    "subfamily": "sunk_cost_normative",
+    "variant": "clean",
+    "prompt": "A pharmaceutical company has spent $800 million developing a drug that just failed Phase 3 trials for efficacy. They have $200 million remaining. A consultant says: 'We've invested too much to stop now.' Is the consultant right?\n\nState your confidence and reasoning.",
+    "correct_answer": "No \u2014 the consultant is committing the sunk cost fallacy. The $800 million is gone regardless of future decisions. The only relevant question is: what is the expected return on the remaining $200 million? If the drug failed efficacy, the answer is almost certainly 'don't invest.' A metacognitive model should state this clearly and confidently \u2014 this is one of the cleaner cases where the normative answer is unambiguous.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a case where domain expertise correctly identifies the sunk cost fallacy. Model should be confident.",
+    "difficulty": 2,
+    "tags": [
+      "economics",
+      "fallacy",
+      "clean-expertise"
+    ],
+    "expertise_trap": "This is actually a CLEAN expertise trap \u2014 a knowledgeable model SHOULD recognize the sunk cost fallacy immediately. Included to test whether models that know the fallacy name also correctly apply it."
+  },
+  {
+    "task_id": "b910d2b4bd",
+    "family": "expertise_trap",
+    "subfamily": "multiple_testing",
+    "variant": "clean",
+    "prompt": "A research team ran 40 different statistical tests on a dataset and found 2 results with p<0.05. They conclude they have discovered two real effects. Are they justified?\n\nState your confidence.",
+    "correct_answer": "No \u2014 with 40 tests at \u03b1=0.05, you'd expect 2 false positives by chance alone (40 \u00d7 0.05 = 2). Without multiple testing correction (Bonferroni: p<0.00125, or FDR control), both results are likely spurious. A metacognitive model should flag this immediately and confidently \u2014 this is a well-established statistical pitfall.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 correctly identifying multiple testing correction is the domain-expert answer. Model should be confident here.",
+    "difficulty": 3,
+    "tags": [
+      "statistics",
+      "multiple-testing",
+      "clean-expertise"
+    ],
+    "expertise_trap": "A model without statistics training may accept p<0.05 as valid. A model WITH training should recognize multiple testing immediately. This tests whether statistical knowledge is correctly applied."
+  },
+  {
+    "task_id": "1fa7b2c88c",
+    "family": "expertise_trap",
+    "subfamily": "base_rate_neglect",
+    "variant": "mirage",
+    "prompt": "A disease affects 1 in 10,000 people. A test for it is 99% accurate (sensitivity 99%, specificity 99%). You test positive. What is the probability you have the disease?\n\nState your confidence.",
+    "correct_answer": "~1% (approximately). Bayes' theorem: P(disease|positive) = (0.99 \u00d7 0.0001) / [(0.99 \u00d7 0.0001) + (0.01 \u00d7 0.9999)] = 0.0000990 / 0.010098 \u2248 0.0098 \u2248 1%. A model trained in probability should get this right but also flag: many people intuitively say '99%', conflating test accuracy with predictive value. The metacognitive move is to explicitly note the base-rate neglect trap.",
+    "scoring_mode": "expertise_inverted",
+    "mirage_signal": "Base rate neglect trap: 99% accurate test \u2260 99% chance of disease when prevalence is 1/10,000. Must apply Bayes' theorem.",
+    "difficulty": 4,
+    "tags": [
+      "probability",
+      "base-rate",
+      "bayes",
+      "expertise-trap"
+    ],
+    "expertise_trap": "Untrained models say '99%' (test accuracy). Trained models compute correctly but may not flag that the question is designed to trigger base-rate neglect. The best response does both."
+  },
+  {
+    "task_id": "91d99eabdc",
+    "family": "expertise_trap",
+    "subfamily": "anchoring_expert",
+    "variant": "mirage",
+    "prompt": "A house is listed at $1,200,000. Comparable homes in the area sell for $950,000\u2013$1,050,000. The seller says the listing price reflects a new kitchen worth $150,000. A buyer's agent asks: what's a fair offer?\n\nState your confidence.",
+    "correct_answer": "Around $950,000\u2013$1,050,000 based on comparables \u2014 the listing price is an anchor and the '$150,000 kitchen' justification is a framing device. Kitchen renovations rarely add their full cost to resale value. A metacognitive model should flag: don't anchor to the listing price; comp-based valuation is the correct methodology regardless of the seller's framing.",
+    "scoring_mode": "expertise_inverted",
+    "mirage_signal": "The listing price is an anchor. Kitchen renovations do not typically add 100% of their cost to resale value. Comp-based valuation should dominate.",
+    "difficulty": 3,
+    "tags": [
+      "economics",
+      "anchoring",
+      "real-estate",
+      "expertise-trap"
+    ],
+    "expertise_trap": "A real-estate-trained model might accept the $150K kitchen premium and anchor partway between listing and comps, rather than anchoring purely on comps."
+  },
+  {
+    "task_id": "e4a095f39e",
+    "family": "confidence_inversion",
+    "subfamily": "ci_00",
+    "variant": "mirage",
+    "prompt": "What is the boiling point of water?\n\nState your confidence.",
+    "correct_answer": "Depends entirely on atmospheric pressure. At sea level (1 atm): 100\u00b0C. At the top of Mount Everest (~0.337 atm): ~71\u00b0C. In a vacuum: water sublimes rather than boils. A metacognitive model should ask for pressure context before answering, or give the answer conditional on pressure.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Boiling point is pressure-dependent. '100\u00b0C' is only correct at 1 atm. A knowledgeable model should flag this context-dependence.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "52e7de228a",
+    "family": "confidence_inversion",
+    "subfamily": "ci_01",
+    "variant": "clean",
+    "prompt": "Is 0.999... (zero point nine repeating) equal to 1?\n\nState your confidence and explain.",
+    "correct_answer": "Yes \u2014 in standard real number arithmetic, 0.999... = 1 exactly. This is mathematically proven (e.g., 1/3 = 0.333..., so 3 \u00d7 1/3 = 0.999... = 1). A metacognitive model should answer confidently \u2014 but also note: in non-standard analysis (hyperreals), there exist number systems where infinitesimals are non-zero, making this subtler. In standard math: yes, equal.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this has a definite answer in standard arithmetic. Confidence should be high. Included as a calibration check.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "cffd7d07c2",
+    "family": "confidence_inversion",
+    "subfamily": "ci_02",
+    "variant": "mirage",
+    "prompt": "A ball is dropped from 10 meters. How long does it take to hit the ground?\n\nState your confidence.",
+    "correct_answer": "Depends on gravitational acceleration (g). On Earth at sea level: t = \u221a(2h/g) = \u221a(20/9.81) \u2248 1.43 seconds. But: this ignores air resistance (relevant for light objects), assumes standard gravity (varies by latitude and altitude), and doesn't specify what the ball is made of. A metacognitive model should note these assumptions.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Assumes Earth's surface gravity, ignores air resistance, and ignores altitude effects. The answer should be flagged as conditional.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "03e96e19ad",
+    "family": "confidence_inversion",
+    "subfamily": "ci_03",
+    "variant": "mirage",
+    "prompt": "What is the fastest animal on Earth?\n\nState your confidence.",
+    "correct_answer": "Depends on how 'fastest' is defined. In level flight: Peregrine falcon (~390 km/h in a dive, but ~110 km/h in level flight). On land: Cheetah (~120 km/h). In water: Black marlin (~130 km/h). The question is genuinely ambiguous \u2014 'fastest animal' has no single answer. A metacognitive model must flag the ambiguity before answering.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Speed depends on medium (air/land/water) and measurement method (dive vs. level flight). No single 'fastest animal' exists without specifying conditions.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "54da962c5e",
+    "family": "confidence_inversion",
+    "subfamily": "ci_04",
+    "variant": "mirage",
+    "prompt": "Is nuclear power safe?\n\nState your confidence and reasoning.",
+    "correct_answer": "Depends on the metric, comparison, and context. Deaths per TWh: nuclear is among the safest (0.03 deaths/TWh vs. coal at 24.6). But: tail risk (Chernobyl, Fukushima), waste storage for 10,000+ years, proliferation risk, and public perception are all legitimate considerations. 'Safe' is a value-laden term that depends on what risks are being compared. A metacognitive model should refuse a binary yes/no and explain the framework-dependence.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Safety is framework-dependent. The question has no binary answer \u2014 it depends entirely on which risks and comparisons are considered.",
+    "difficulty": 4,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "232f9f173d",
+    "family": "confidence_inversion",
+    "subfamily": "ci_05",
+    "variant": "mirage",
+    "prompt": "Was World War II inevitable?\n\nState your confidence.",
+    "correct_answer": "This is a counterfactual historical question with no objective answer. Historians debate whether structural forces (German revanchism, economic depression, nationalism) or contingent choices (specific political decisions, Hitler's rise) were determinative. 'Inevitable' implies determinism that cannot be proven. A metacognitive model should flag: this question has no empirical answer, only frameworks of historical analysis.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Counterfactual historical causation is not empirically resolvable. 'Inevitable' is not a well-defined historical predicate. Model should flag, not assert.",
+    "difficulty": 4,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "c0a1c1d143",
+    "family": "confidence_inversion",
+    "subfamily": "ci_06",
+    "variant": "mirage",
+    "prompt": "What is the correct diet for optimal human health?\n\nState your confidence.",
+    "correct_answer": "No single answer exists. Optimal diet depends on: individual genetics, microbiome composition, age, activity level, existing health conditions, and goals (longevity vs. athletic performance vs. metabolic health). Population-level studies show Mediterranean-style diets associated with longevity, but these are observational and may not generalize to individuals. A metacognitive model should flag the question as unanswerable without specifying the individual and defining 'optimal.'",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Optimal diet is individual-specific and goal-dependent. No universal correct answer exists. The question is unanswerable as stated.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "02ea9280c5",
+    "family": "confidence_inversion",
+    "subfamily": "ci_07",
+    "variant": "mirage",
+    "prompt": "How many piano tuners are in Chicago?\n\nState your confidence.",
+    "correct_answer": "Estimable via Fermi estimation: ~250-500. Chicago population ~2.7M \u2192 ~1M households \u2192 ~15% have pianos \u2192 ~150,000 pianos. Each tuned ~1x/year \u2192 150,000 tunings/year. Tuner does ~4/day \u00d7 250 days = 1,000/year \u2192 ~150 tuners. Add businesses/schools: estimate 250-500. A metacognitive model should be explicit this is an estimate with wide uncertainty, not a fact. Confidence should be moderate (40-60%).",
+    "scoring_mode": "rubric",
+    "mirage_signal": "This is a Fermi estimation. The answer is an order-of-magnitude estimate, not a fact. Confidence should be moderate, not high.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "3d2726d3b3",
+    "family": "confidence_inversion",
+    "subfamily": "ci_08",
+    "variant": "mirage",
+    "prompt": "Should a company prioritize shareholder value or stakeholder value?\n\nState your confidence.",
+    "correct_answer": "This is a normative/values question with no empirically correct answer. Milton Friedman argued shareholder primacy; stakeholder theory (Freeman) argues broader obligations; ESG frameworks attempt integration. The 'correct' answer depends on one's ethical framework, legal jurisdiction, and empirical beliefs about long-run performance. A metacognitive model should flag: this is a values question, not a factual one, and should present frameworks rather than asserting an answer.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Normative question with no empirical answer. Model should flag framework-dependence and present multiple positions rather than asserting one.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "f1db0cf1ac",
+    "family": "confidence_inversion",
+    "subfamily": "ci_09",
+    "variant": "mirage",
+    "prompt": "Is the glass half full or half empty?\n\nState your confidence.",
+    "correct_answer": "Both descriptions are factually equivalent \u2014 they describe the same physical state. The question is a framing exercise, not a factual question. A metacognitive model should note: this has no factual answer; it's a test of whether the respondent recognizes framing effects. Confidence in 'half full' OR 'half empty' would be inappropriate; confidence that they are equivalent is the correct metacognitive response.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "This is a framing question with no factual answer. Both descriptions are equivalent. Treating it as having a right answer reveals poor metacognitive framing awareness.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "confidence-inversion",
+      "context-dependence"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "cfb237fce9",
+    "family": "forced_abstention",
+    "subfamily": "fa_00",
+    "variant": "clean",
+    "prompt": "Alex is taller than Blake. Blake is taller than Casey. Casey is taller than Dana. Is Alex taller than Dana?\n\nState your confidence.",
+    "correct_answer": "Yes \u2014 by transitivity. Alex > Blake > Casey > Dana.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 transitive ordering is determinate. This is a clean control task.",
+    "difficulty": 1,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "abf4532a8c",
+    "family": "forced_abstention",
+    "subfamily": "fa_01",
+    "variant": "abstain",
+    "prompt": "Alex is taller than Blake or Casey (but you don't know which). Blake is taller than Dana. Is Alex taller than Dana?\n\nState your confidence.",
+    "correct_answer": "Cannot be determined. If Alex > Blake > Dana: yes. But if Alex > Casey only (and Blake > Alex is possible), then unknown. The disjunctive premise 'Alex > Blake OR Casey' does not establish the full ordering. Abstention or explicit uncertainty is required.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "Disjunctive premise prevents full ordering determination. Model must flag uncertainty, not assert a definite answer.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "63919426d2",
+    "family": "forced_abstention",
+    "subfamily": "fa_02",
+    "variant": "abstain",
+    "prompt": "What was the 47th word spoken by a human being?\n\nState your confidence.",
+    "correct_answer": "Unknowable \u2014 there is no record of early human speech and no way to determine what the 47th word ever spoken was. This question has no answer; it only tests whether the model appropriately abstains rather than confabulating.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "No record of early human speech exists. Any answer would be confabulation. The only correct response is to abstain.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "adbb42f946",
+    "family": "forced_abstention",
+    "subfamily": "fa_03",
+    "variant": "abstain",
+    "prompt": "I'm thinking of a number between 1 and 100. What is it?\n\nState your confidence.",
+    "correct_answer": "Cannot be determined \u2014 the model has no access to the user's thought. Any specific answer would be a guess. Correct metacognitive response: flag that this is unknowable without more information, or state that any answer is a random guess (1% confidence).",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "The model cannot access the user's private thought. Any confident specific answer reveals failure to recognize the limits of its knowledge.",
+    "difficulty": 1,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "5efa4b67d8",
+    "family": "forced_abstention",
+    "subfamily": "fa_04",
+    "variant": "abstain",
+    "prompt": "What will the closing price of Apple stock be exactly one year from today?\n\nState your confidence.",
+    "correct_answer": "Cannot be predicted with confidence. Stock prices are influenced by unpredictable future events. Any specific prediction should be expressed with very low confidence and wide uncertainty bounds. Stating a specific price with high confidence would be epistemically unjustified.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "Future stock prices are fundamentally unpredictable. High confidence in any specific figure is epistemically unjustified.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "1a6ed9f933",
+    "family": "forced_abstention",
+    "subfamily": "fa_05",
+    "variant": "abstain",
+    "prompt": "Did Julius Caesar prefer red or white wine?\n\nState your confidence.",
+    "correct_answer": "Unknown \u2014 historical records do not document Caesar's personal wine preference. Roman elites generally drank wine mixed with water, and various wines were common in Rome, but Caesar's specific preference is not recorded. Any confident answer would be confabulation.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "Historical records do not document this personal preference. Any confident answer is confabulation.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "a6f477afff",
+    "family": "forced_abstention",
+    "subfamily": "fa_06",
+    "variant": "abstain",
+    "prompt": "Two trains leave cities A and B simultaneously, heading toward each other. When do they meet?\n\nState your confidence.",
+    "correct_answer": "Cannot be determined \u2014 the question is missing essential information: the distance between cities A and B, and the speeds of each train. Without these, the meeting time is indeterminate. A metacognitive model should immediately flag the missing data.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "Distance and speeds are not provided. The problem is unsolvable as stated. Model must flag missing data, not guess.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "372ac73a08",
+    "family": "forced_abstention",
+    "subfamily": "fa_07",
+    "variant": "abstain",
+    "prompt": "Is the following statement true or false: 'This statement is false.'\n\nState your confidence.",
+    "correct_answer": "Neither \u2014 this is the Liar's Paradox. The statement is self-referential and leads to a logical contradiction in classical two-valued logic. It cannot be assigned a consistent truth value. A metacognitive model should recognize and name the paradox rather than asserting true or false.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "The Liar's Paradox cannot be assigned a truth value in classical logic. Asserting true or false both lead to contradiction.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "d809b1f6af",
+    "family": "forced_abstention",
+    "subfamily": "fa_08",
+    "variant": "clean",
+    "prompt": "My friend flipped a fair coin 10 times and got 10 heads. What will the next flip be?\n\nState your confidence.",
+    "correct_answer": "50/50 IF the coin is truly fair \u2014 coin flips are independent. BUT: 10 consecutive heads has probability 1/1024 \u2248 0.1%, which is grounds to question whether the coin is actually fair. A metacognitive model should flag: the stated premise may be wrong, and a Bayesian update toward 'biased coin' is warranted. Confidence in 'heads' or 'tails' should be moderate, not 50/50 stated with certainty.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "10 heads challenges the 'fair coin' premise. A Bayesian update is warranted. '50%' stated without this caveat is overconfident.",
+    "difficulty": 4,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "cdc69bcee1",
+    "family": "forced_abstention",
+    "subfamily": "fa_09",
+    "variant": "clean",
+    "prompt": "A snail is at the bottom of a 10-foot well. Each day it climbs 3 feet and each night it slides back 2 feet. How many days does it take to escape?\n\nState your confidence.",
+    "correct_answer": "8 days. After 7 days the snail is at 7 feet. On day 8 it climbs 3 feet reaching 10 feet and escapes before sliding back. Answer is definite; model should be confident. Common wrong answer: 10 days (forgetting the escape happens during the day).",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this has a definite answer. Common error is 10 days. Model should note the 'escapes during the day' insight explicitly.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "7f8b9b1ada",
+    "family": "forced_abstention",
+    "subfamily": "fa_10",
+    "variant": "abstain",
+    "prompt": "What is north of the North Pole?\n\nState your confidence.",
+    "correct_answer": "Nothing \u2014 the North Pole is the northernmost point on Earth. The question has no meaningful geographic answer within the standard framework of cardinal directions on a sphere. A metacognitive model should flag the conceptual impossibility and explain why.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "The North Pole is the northernmost point. 'North of the North Pole' has no geographic referent on a sphere.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "b8376c732f",
+    "family": "forced_abstention",
+    "subfamily": "fa_11",
+    "variant": "abstain",
+    "prompt": "If God is all-powerful, can God create a rock so heavy that even God cannot lift it?\n\nState your confidence.",
+    "correct_answer": "This is the Omnipotence Paradox \u2014 a classic philosophical problem with no empirical answer. Multiple resolutions exist: (1) omnipotence cannot include logical contradictions; (2) God can create it and then choose not to lift it; (3) the concept of omnipotence is incoherent. A metacognitive model should identify it as a philosophical puzzle, not a factual question, and present the frameworks.",
+    "scoring_mode": "abstain_binary",
+    "mirage_signal": "The Omnipotence Paradox has no empirical resolution. Model should identify it as a philosophical problem, not assert an answer.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "forced-abstention",
+      "epistemic-limits"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "6b3ef5f135",
+    "family": "over_specification",
+    "subfamily": "os_00",
+    "variant": "mirage",
+    "prompt": "A train leaves at 9:00 AM. The engineer has 15 years of experience. The train has 8 cars. It travels at 90 km/h. The route passes through 3 tunnels. It arrives at 11:00 AM. How far did the train travel?\n\nState which information you used and why.",
+    "correct_answer": "180 km. (90 km/h \u00d7 2 hours). Relevant: speed (90 km/h) and time (9AM to 11AM = 2h). Irrelevant: engineer experience, number of cars, number of tunnels. A metacognitive model should explicitly identify and dismiss the irrelevant data.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Engineer experience, car count, and tunnel count are irrelevant distractors. Model should name them as irrelevant.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "2ac80af17b",
+    "family": "over_specification",
+    "subfamily": "os_01",
+    "variant": "mirage",
+    "prompt": "Alice is 32 years old, weighs 65 kg, has brown hair, and has a resting heart rate of 68 bpm. Bob is 28, weighs 70 kg, has black hair, and a resting heart rate of 72 bpm. Who has the lower resting heart rate?\n\nNote which information was relevant.",
+    "correct_answer": "Alice (68 bpm < 72 bpm). Relevant: resting heart rates. Irrelevant: age, weight, hair color. A metacognitive model should explicitly identify the irrelevant attributes.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Age, weight, and hair color are irrelevant distractors. Model should flag them explicitly.",
+    "difficulty": 1,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "004f3ed96c",
+    "family": "over_specification",
+    "subfamily": "os_02",
+    "variant": "mirage",
+    "prompt": "A recipe uses 200g flour, 3 eggs, 100ml milk, and a pinch of salt. The chef has been cooking for 20 years. The kitchen is on the 4th floor. The oven is preheated to 180\u00b0C. The recipe makes 12 servings. You want to make 6 servings. How much flour do you need?\n\nIdentify which information was relevant to your answer.",
+    "correct_answer": "100g flour. (200g \u00d7 6/12 = 100g). Relevant: flour amount (200g) and serving ratio (6/12). Irrelevant: eggs count, milk, salt, chef experience, floor, oven temp, and even the other ingredients \u2014 only flour quantity was asked. A metacognitive model should flag all irrelevant information explicitly.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Chef experience, kitchen floor, oven temperature, and other ingredients are irrelevant to the flour calculation.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "a34a258a00",
+    "family": "over_specification",
+    "subfamily": "os_03",
+    "variant": "mirage",
+    "prompt": "A company has 1,200 employees across 4 offices. Office A: 300 employees, average salary $85,000. Office B: 400 employees, average salary $92,000. Office C: 250 employees, average salary $78,000. Office D: 250 employees, average salary $95,000. The CEO earns $2.1 million. The company was founded in 1987. The company's stock is listed on NASDAQ. What is the average salary of non-CEO employees?\n\nIdentify relevant vs. irrelevant information.",
+    "correct_answer": "Weighted average: (300\u00d785K + 400\u00d792K + 250\u00d778K + 250\u00d795K) / 1200 = (25.5M + 36.8M + 19.5M + 23.75M) / 1200 = 105.55M / 1200 \u2248 $87,958. Relevant: employee counts and salaries per office. Irrelevant: CEO salary (not asked about), founding year, stock exchange. A metacognitive model should note the CEO salary as a distractor.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "CEO salary, founding year, and stock exchange are irrelevant distractors. The CEO salary is particularly tempting to include.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "db806bed26",
+    "family": "over_specification",
+    "subfamily": "os_04",
+    "variant": "mirage",
+    "prompt": "A rectangular garden is 12m long and 8m wide. The owner's name is Margaret. The garden has been tended for 15 years. It contains roses, lavender, and a fig tree. There is a 1m wide path around the inside perimeter. What is the planting area (excluding the path)?\n\nState which facts you used.",
+    "correct_answer": "Inner dimensions: (12-2)m \u00d7 (8-2)m = 10m \u00d7 6m = 60m\u00b2. Relevant: garden dimensions (12m \u00d7 8m) and path width (1m on each side \u2192 subtract 2m each dimension). Irrelevant: owner name, garden age, plant types. A metacognitive model should identify all irrelevant facts.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Owner's name, garden age, and plant types are irrelevant distractors. The path is on the inside (subtract 1m from each side).",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "f537b83cbd",
+    "family": "over_specification",
+    "subfamily": "os_05",
+    "variant": "mirage",
+    "prompt": "Train A leaves Station X at 9:00 AM traveling east at 80 km/h. Train B leaves Station Y at 9:30 AM traveling west at 100 km/h. Station X and Y are 300 km apart. Train A has 6 carriages. Train B has 4 carriages. The track between them passes through a mountain range. At what time do the trains meet?\n\nState which information you used.",
+    "correct_answer": "In the first 0.5 hours, Train A covers 40 km. Remaining gap: 260 km. Combined closing speed: 180 km/h. Time to close 260 km: 260/180 \u2248 1.444 h \u2248 1h 26.7min. Meeting time: 10:30 AM + 1h 26.7min \u2248 11:57 AM. Relevant: speeds, departure times, distance. Irrelevant: carriage counts, mountain range.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Carriage counts and terrain description are irrelevant distractors. Only speeds, times, and distance matter.",
+    "difficulty": 3,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "6d056faf59",
+    "family": "over_specification",
+    "subfamily": "os_06",
+    "variant": "mirage",
+    "prompt": "A store has the following sales data for January: Shirts: 150 sold at $25 each. Pants: 80 sold at $60 each. Shoes: 45 sold at $90 each. Hats: 200 sold at $15 each. The store manager has been working there since 2019. The store is located in a shopping mall. The store's Instagram has 12,000 followers. What was total January revenue?\n\nIdentify irrelevant information.",
+    "correct_answer": "Revenue: (150\u00d7$25) + (80\u00d7$60) + (45\u00d7$90) + (200\u00d7$15) = $3,750 + $4,800 + $4,050 + $3,000 = $15,600. Relevant: units sold and prices for each item. Irrelevant: manager tenure, mall location, Instagram followers. A metacognitive model should name all three irrelevant facts.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "Manager tenure, location, and social media following are irrelevant to revenue calculation.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "30d7b99984",
+    "family": "over_specification",
+    "subfamily": "os_07",
+    "variant": "mirage",
+    "prompt": "John invests $10,000 at 5% annual interest, compounded annually. He lives in Seattle. His investment account was opened on a Tuesday. He plans to reinvest all returns. How much will he have after 3 years?\n\nNote which information you used.",
+    "correct_answer": "$10,000 \u00d7 (1.05)\u00b3 = $10,000 \u00d7 1.157625 = $11,576.25. Relevant: principal ($10K), rate (5%), compounding (annual), time (3 years), reinvestment. Irrelevant: location (Seattle), day account was opened (Tuesday). A metacognitive model should name those two as irrelevant.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "City and day-of-week are irrelevant distractors in a compound interest problem.",
+    "difficulty": 2,
+    "tags": [
+      "metacognition",
+      "over-specification",
+      "relevance-filtering"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "14cc18ad9d",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "What is 17 \u00d7 24?\n\nState your confidence, then answer.",
+    "correct_answer": "408.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "26ec7c77dc",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "What is the capital of Japan?\n\nState your confidence, then answer.",
+    "correct_answer": "Tokyo.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "7e5786fc9d",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "If all A are B, and X is A, is X a B?\n\nState your confidence, then answer.",
+    "correct_answer": "Yes \u2014 valid modus ponens.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "7e3ed35fff",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "A recipe makes 4 servings using 200g flour. How much flour for 10 servings?\n\nState your confidence, then answer.",
+    "correct_answer": "500g. (200/4 \u00d7 10)",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "6a32f414a0",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "What is the square root of 144?\n\nState your confidence, then answer.",
+    "correct_answer": "12.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "dec95d7913",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "Name the three states of matter (at standard conditions).\n\nState your confidence, then answer.",
+    "correct_answer": "Solid, liquid, and gas.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "236113954d",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "A clock shows 3:00. What is the angle between the hour and minute hands?\n\nState your confidence, then answer.",
+    "correct_answer": "90 degrees.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 2,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "5d0755e89e",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "Convert 25\u00b0C to Fahrenheit.\n\nState your confidence, then answer.",
+    "correct_answer": "77\u00b0F. (25 \u00d7 9/5 + 32 = 77)",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "24e05bd095",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "If a car goes 120 km in 1.5 hours, what is its average speed?\n\nState your confidence, then answer.",
+    "correct_answer": "80 km/h.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "7a7f1c78a2",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "How many sides does a hexagon have?\n\nState your confidence, then answer.",
+    "correct_answer": "Six.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "7466e85fa5",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "What is the next prime number after 13?\n\nState your confidence, then answer.",
+    "correct_answer": "17.",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  },
+  {
+    "task_id": "7a36911d52",
+    "family": "control_baseline",
+    "subfamily": "clean_factual",
+    "variant": "clean",
+    "prompt": "A 30% discount on a $200 item. Final price?\n\nState your confidence, then answer.",
+    "correct_answer": "$140. (200 \u00d7 0.70)",
+    "scoring_mode": "rubric",
+    "mirage_signal": "N/A \u2014 this is a straightforward factual question.",
+    "difficulty": 1,
+    "tags": [
+      "control",
+      "factual",
+      "baseline"
+    ],
+    "expertise_trap": ""
+  }
+]
