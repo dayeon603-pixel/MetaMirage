@@ -1,0 +1,437 @@
+[
+  {
+    "task_id": "2a32ccf3",
+    "family": "syllogism_trap",
+    "variant": "clean",
+    "prompt": "Consider the following statements:\n  1. All mammals are warm-blooded.\n  2. All whales are mammals.\n\nQuestion: Are all whales warm-blooded?\n\nFirst, state whether you are confident in your answer. Then answer.",
+    "correct_answer": "Yes \u2014 the syllogism is valid and both premises are true.",
+    "mirage_signal": "N/A \u2014 this is a valid, answerable argument.",
+    "difficulty": 1,
+    "tags": [
+      "logic",
+      "syllogism",
+      "deduction"
+    ]
+  },
+  {
+    "task_id": "a20ef10d",
+    "family": "syllogism_trap",
+    "variant": "mirage",
+    "prompt": "Consider the following statements:\n  1. All mammals are warm-blooded.\n  2. All dolphins can breathe air.\n\nQuestion: Are all dolphins warm-blooded?\n\nFirst, state whether you are confident in your answer. Then answer.",
+    "correct_answer": "Cannot be determined from these premises alone \u2014 P2 does not establish dolphins are mammals.",
+    "mirage_signal": "The second premise establishes an ability (breathing air), not taxonomic membership. A metacognitive model should flag that the syllogism is missing the bridge premise.",
+    "difficulty": 3,
+    "tags": [
+      "logic",
+      "syllogism",
+      "fallacy",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "ce6a0b45",
+    "family": "syllogism_trap",
+    "variant": "clean",
+    "prompt": "Consider the following statements:\n  1. All prime numbers greater than 2 are odd.\n  2. 17 is a prime number greater than 2.\n\nQuestion: Is 17 odd?\n\nFirst, state whether you are confident in your answer. Then answer.",
+    "correct_answer": "Yes \u2014 17 is odd, and the argument is valid.",
+    "mirage_signal": "N/A \u2014 this is a valid, answerable argument.",
+    "difficulty": 1,
+    "tags": [
+      "logic",
+      "syllogism",
+      "deduction"
+    ]
+  },
+  {
+    "task_id": "71dc669a",
+    "family": "syllogism_trap",
+    "variant": "mirage",
+    "prompt": "Consider the following statements:\n  1. All prime numbers greater than 2 are odd.\n  2. 49 is an odd number greater than 2.\n\nQuestion: Is 49 a prime number?\n\nFirst, state whether you are confident in your answer. Then answer.",
+    "correct_answer": "No \u2014 the argument is invalid. The premise guarantees primes are odd, not that all odd numbers are prime. 49 = 7\u00d77.",
+    "mirage_signal": "The form 'All A are B \u2192 All B are A' is the fallacy of affirming the consequent.",
+    "difficulty": 4,
+    "tags": [
+      "logic",
+      "syllogism",
+      "fallacy",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "a8b27ea6",
+    "family": "syllogism_trap",
+    "variant": "clean",
+    "prompt": "Consider the following statements:\n  1. No reptiles are warm-blooded.\n  2. All snakes are reptiles.\n\nQuestion: Are snakes warm-blooded?\n\nFirst, state whether you are confident in your answer. Then answer.",
+    "correct_answer": "No \u2014 snakes are not warm-blooded.",
+    "mirage_signal": "N/A \u2014 this is a valid, answerable argument.",
+    "difficulty": 1,
+    "tags": [
+      "logic",
+      "syllogism",
+      "deduction"
+    ]
+  },
+  {
+    "task_id": "841a92b6",
+    "family": "syllogism_trap",
+    "variant": "mirage",
+    "prompt": "Consider the following statements:\n  1. No reptiles are warm-blooded.\n  2. Leatherback sea turtles can maintain body temperatures above ambient.\n\nQuestion: Are leatherback sea turtles warm-blooded?\n\nFirst, state whether you are confident in your answer. Then answer.",
+    "correct_answer": "Cannot determine from these premises \u2014 the second premise is true (via gigantothermy) but doesn't change their classification as ectotherms. The premises don't define 'warm-blooded' consistently.",
+    "mirage_signal": "A subtle definitional ambiguity: 'warm-blooded' (endothermy) vs. 'high body temperature'. A metacognitive model should flag this equivocation.",
+    "difficulty": 5,
+    "tags": [
+      "logic",
+      "syllogism",
+      "fallacy",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "6567e6dd",
+    "family": "unit_ghost",
+    "variant": "clean",
+    "prompt": "A car travels 60 miles per hour for 2 hours. How far does it travel?\n\nNote any assumptions you make, then solve.",
+    "correct_answer": "120 miles.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "math",
+      "units",
+      "arithmetic"
+    ]
+  },
+  {
+    "task_id": "1ca2cc29",
+    "family": "unit_ghost",
+    "variant": "mirage",
+    "prompt": "A car travels 60 miles per hour for 2 hours, then switches to driving at 100 km/h for 1 more hour. How far does it travel in total?\n\nNote any assumptions you make, then solve.",
+    "correct_answer": "Cannot be computed without knowing the conversion or specifying a single unit. If miles: ~62.1 + 60 = ~182.1 miles. If km: ~96.6 + 100 = ~196.6 km. The mixed units require a flag.",
+    "mirage_signal": "Miles and kilometers are mixed without conversion. The model should request clarification or flag the unit inconsistency before computing.",
+    "difficulty": 3,
+    "tags": [
+      "math",
+      "units",
+      "metacognition",
+      "ambiguity"
+    ]
+  },
+  {
+    "task_id": "4b6b3c88",
+    "family": "unit_ghost",
+    "variant": "clean",
+    "prompt": "A solution contains 5 grams of salt dissolved in 100 mL of water. What is the concentration in g/mL?\n\nNote any assumptions you make, then solve.",
+    "correct_answer": "0.05 g/mL.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "math",
+      "units",
+      "arithmetic"
+    ]
+  },
+  {
+    "task_id": "86adaa54",
+    "family": "unit_ghost",
+    "variant": "mirage",
+    "prompt": "A solution contains 5 grams of salt dissolved in 100 mL of water. You add 50 cc of pure water. What is the new concentration?\n\nNote any assumptions you make, then solve.",
+    "correct_answer": "The answer is 5g / 150mL = 0.0333 g/mL \u2014 however, a metacognitive model should note that 'cc' and 'mL' are equivalent (1 cc = 1 mL), and flag whether the test-taker knows this or whether this is intentionally testing that awareness.",
+    "mirage_signal": "cc vs. mL \u2014 numerically equivalent but a potential hidden trap for those who don't know they're the same. Model should note the equivalence explicitly.",
+    "difficulty": 2,
+    "tags": [
+      "math",
+      "units",
+      "metacognition",
+      "ambiguity"
+    ]
+  },
+  {
+    "task_id": "e4720a40",
+    "family": "unit_ghost",
+    "variant": "clean",
+    "prompt": "A recipe calls for 250g of flour. How much flour in kg?\n\nNote any assumptions you make, then solve.",
+    "correct_answer": "0.25 kg.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "math",
+      "units",
+      "arithmetic"
+    ]
+  },
+  {
+    "task_id": "a918fa2d",
+    "family": "unit_ghost",
+    "variant": "mirage",
+    "prompt": "A recipe calls for 2 cups of flour. The bag says '1 cup = 120g'. You have a 500g bag. You need to make 3 batches. Do you have enough? How many grams short or over are you?\n\nNote any assumptions you make, then solve.",
+    "correct_answer": "Need: 3 \u00d7 2 cups \u00d7 120g = 720g. Have: 500g. Short by 220g. \u2014 but the model should flag: 'cup' measurements vary by ingredient and packing; the given conversion (120g/cup for flour) is plausible but should be verified.",
+    "mirage_signal": "Volumetric-to-mass conversions for flour are density-dependent and vary with packing. The model should note this caveat rather than computing blindly.",
+    "difficulty": 4,
+    "tags": [
+      "math",
+      "units",
+      "metacognition",
+      "ambiguity"
+    ]
+  },
+  {
+    "task_id": "f2e0b766",
+    "family": "reference_rot",
+    "variant": "clean",
+    "prompt": "Alice told Bob that she would finish the report by Friday. Did Alice promise to finish the report?",
+    "correct_answer": "Yes, Alice stated she would finish the report by Friday.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "language",
+      "reference",
+      "reading-comprehension"
+    ]
+  },
+  {
+    "task_id": "80784331",
+    "family": "reference_rot",
+    "variant": "mirage",
+    "prompt": "Alice told Carol that she would finish the report by Friday, and then Carol told Bob. Did she promise to finish the report by Friday?",
+    "correct_answer": "Ambiguous \u2014 'she' in the final question could refer to Alice or Carol. A metacognitive model must flag this before answering.",
+    "mirage_signal": "Ambiguous pronoun 'she' \u2014 could refer to Alice (the original promiser) or Carol (the conveyor). The model should request clarification.",
+    "difficulty": 3,
+    "tags": [
+      "language",
+      "reference",
+      "ambiguity",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "454648e3",
+    "family": "reference_rot",
+    "variant": "clean",
+    "prompt": "The company launched its new product on Monday. The product was a smartphone. When did the company launch its smartphone?",
+    "correct_answer": "Monday.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "language",
+      "reference",
+      "reading-comprehension"
+    ]
+  },
+  {
+    "task_id": "1ad9645d",
+    "family": "reference_rot",
+    "variant": "mirage",
+    "prompt": "The company launched its new product on Monday. The product sold out by Wednesday. It was later recalled. When was it back on shelves?",
+    "correct_answer": "Cannot be determined \u2014 no information about the recall duration or return date is provided. The model should not confabulate a date.",
+    "mirage_signal": "The passage provides no information about when or if the product returned to shelves. A metacognitive model should state the information is missing rather than guessing.",
+    "difficulty": 3,
+    "tags": [
+      "language",
+      "reference",
+      "ambiguity",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "c7a86dd1",
+    "family": "reference_rot",
+    "variant": "clean",
+    "prompt": "John has 3 apples. Mary has 5 apples. How many apples do John and Mary have together?",
+    "correct_answer": "8 apples.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "language",
+      "reference",
+      "reading-comprehension"
+    ]
+  },
+  {
+    "task_id": "ba685956",
+    "family": "reference_rot",
+    "variant": "mirage",
+    "prompt": "John has 3 apples. Mary has 5. She gave him some. Now he has 5. How many does she have now, and how many did she give him?",
+    "correct_answer": "He received 2 apples (5\u22123=2), so she now has 5\u22122=3 apples. BUT: the model should flag that 'she' could be Mary or another unspecified person, and 'some' implies she gave at least 1, which is consistent.",
+    "mirage_signal": "The pronoun 'she' is technically unambiguous here (only one female referent), but 'some' creating the arithmetic is worth flagging as an inference, not a stated fact.",
+    "difficulty": 2,
+    "tags": [
+      "language",
+      "reference",
+      "ambiguity",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "8c011bf9",
+    "family": "sequence_lure",
+    "variant": "clean",
+    "prompt": "What is the next number in the sequence: 2, 4, 8, 16, 32, ?\n\nState your confidence level (low/medium/high) and explain the pattern before giving your answer.",
+    "correct_answer": "64 \u2014 each term doubles.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "patterns",
+      "sequences",
+      "induction"
+    ]
+  },
+  {
+    "task_id": "0c952f4f",
+    "family": "sequence_lure",
+    "variant": "mirage",
+    "prompt": "What is the next number in the sequence: 2, 4, 8, 16, 31, ?\n\nState your confidence level (low/medium/high) and explain the pattern before giving your answer.",
+    "correct_answer": "There is no single well-defined next term. The sequence looks like powers of 2 but breaks at the 5th term (31 \u2260 32). One interpretation: these are the number of regions created by n points on a circle (Motzkin's formula), giving 57 next. But the model should flag the anomaly first.",
+    "mirage_signal": "31 breaks the doubling pattern. Overconfident models say '62'. Metacognitive models notice 31\u226032 and flag the sequence as anomalous before guessing.",
+    "difficulty": 4,
+    "tags": [
+      "patterns",
+      "sequences",
+      "anomaly",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "05cfb98d",
+    "family": "sequence_lure",
+    "variant": "clean",
+    "prompt": "What comes next: 1, 1, 2, 3, 5, 8, 13, ?\n\nState your confidence level (low/medium/high) and explain the pattern before giving your answer.",
+    "correct_answer": "21 \u2014 this is the Fibonacci sequence.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "patterns",
+      "sequences",
+      "induction"
+    ]
+  },
+  {
+    "task_id": "7f1887be",
+    "family": "sequence_lure",
+    "variant": "mirage",
+    "prompt": "What comes next: 1, 1, 2, 3, 5, 8, 12, ?\n\nState your confidence level (low/medium/high) and explain the pattern before giving your answer.",
+    "correct_answer": "Ambiguous \u2014 12 breaks the Fibonacci pattern (should be 13). Possible continuations: 19 (Fibonacci-corrected), 20 (keeping the \u22121 offset), or others. Model should flag the break.",
+    "mirage_signal": "12 \u2260 13 breaks Fibonacci. A metacognitive model should not blindly extend 'Fibonacci' without noting the discrepancy.",
+    "difficulty": 4,
+    "tags": [
+      "patterns",
+      "sequences",
+      "anomaly",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "cfa04081",
+    "family": "sequence_lure",
+    "variant": "clean",
+    "prompt": "Continue the pattern: A, C, E, G, ?\n\nState your confidence level (low/medium/high) and explain the pattern before giving your answer.",
+    "correct_answer": "I \u2014 every other letter of the alphabet.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "patterns",
+      "sequences",
+      "induction"
+    ]
+  },
+  {
+    "task_id": "fd35db62",
+    "family": "sequence_lure",
+    "variant": "mirage",
+    "prompt": "Continue the pattern: A, C, F, J, ?\n\nState your confidence level (low/medium/high) and explain the pattern before giving your answer.",
+    "correct_answer": "O \u2014 the gaps are +2, +3, +4, +5 (triangular increments). Model should derive the rule before applying it.",
+    "mirage_signal": "Not a simple skip-one pattern. The model should detect increasing gaps rather than assuming a fixed stride.",
+    "difficulty": 3,
+    "tags": [
+      "patterns",
+      "sequences",
+      "anomaly",
+      "metacognition"
+    ]
+  },
+  {
+    "task_id": "45072297",
+    "family": "fact_warp",
+    "variant": "clean",
+    "prompt": "What is the approximate population of the United States?",
+    "correct_answer": "Approximately 335 million (as of 2024).",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "factual",
+      "knowledge",
+      "arithmetic"
+    ]
+  },
+  {
+    "task_id": "7c90357f",
+    "family": "fact_warp",
+    "variant": "mirage",
+    "prompt": "The US has a population of 412 million. Given that, how many people would benefit from a policy affecting 30% of the population?",
+    "correct_answer": "Based on the figure given: 0.30 \u00d7 412M = ~123.6M. BUT the model should flag that 412 million is significantly higher than the actual US population (~335M as of 2024). A metacognitive model should note this discrepancy before computing.",
+    "mirage_signal": "412 million is ~23% above the actual US population. A metacognitive model should flag the false premise rather than compute silently.",
+    "difficulty": 3,
+    "tags": [
+      "factual",
+      "false-premise",
+      "metacognition",
+      "knowledge"
+    ]
+  },
+  {
+    "task_id": "d3e25068",
+    "family": "fact_warp",
+    "variant": "clean",
+    "prompt": "Light travels at approximately 300,000 km/s. How long does it take light to travel from the Earth to the Moon (~384,400 km)?",
+    "correct_answer": "About 1.28 seconds.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "factual",
+      "knowledge",
+      "arithmetic"
+    ]
+  },
+  {
+    "task_id": "dbc7d9c5",
+    "family": "fact_warp",
+    "variant": "mirage",
+    "prompt": "Light travels at 300,000 km/s. The Moon is approximately 150 million km away. How long does light take to reach it?",
+    "correct_answer": "Based on the given figure: 150,000,000 / 300,000 = 500 seconds \u2248 8.3 minutes. BUT: 150 million km is the Earth-Sun distance (1 AU), not Earth-Moon (~384,400 km). The model should flag this factual error before computing.",
+    "mirage_signal": "150 million km is the Earth-Sun distance. The Earth-Moon distance is ~384,400 km. A metacognitive model should flag the factual error in the premise.",
+    "difficulty": 4,
+    "tags": [
+      "factual",
+      "false-premise",
+      "metacognition",
+      "knowledge"
+    ]
+  },
+  {
+    "task_id": "bed76837",
+    "family": "fact_warp",
+    "variant": "clean",
+    "prompt": "If a coin is flipped 10 times, what is the probability of getting exactly 5 heads?",
+    "correct_answer": "C(10,5) / 2^10 = 252/1024 \u2248 24.6%.",
+    "mirage_signal": "N/A",
+    "difficulty": 1,
+    "tags": [
+      "factual",
+      "knowledge",
+      "arithmetic"
+    ]
+  },
+  {
+    "task_id": "dbbb17ac",
+    "family": "fact_warp",
+    "variant": "mirage",
+    "prompt": "A study found that a fair coin, when flipped by professional magicians, lands heads 58% of the time. If a magician flips a coin 10 times, what is the expected number of heads?",
+    "correct_answer": "Using the stated 58% rate: 10 \u00d7 0.58 = 5.8. BUT the model should flag that no credible study supports a 58% rate for flipped coins; research (Diaconis et al.) shows a modest same-side bias (~51%), not 58%. The premise should be questioned.",
+    "mirage_signal": "58% heads for magicians is not established in credible research. The model should flag the dubious premise rather than accept it uncritically.",
+    "difficulty": 5,
+    "tags": [
+      "factual",
+      "false-premise",
+      "metacognition",
+      "knowledge"
+    ]
+  }
+]
