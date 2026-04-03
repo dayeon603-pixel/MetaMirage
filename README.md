@@ -1,7 +1,7 @@
 # CognitiveMirage: A Mirage-Pair Benchmark for Metacognitive Monitoring in LLMs
 
 **Track:** Metacognition  
-**Team:** [Your Name]
+**Team:** Dayeon Kang
 
 ---
 
