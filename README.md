@@ -1,4 +1,3 @@
-[WRITEUP.md](https://github.com/user-attachments/files/26451824/WRITEUP.md)
 # CognitiveMirage: A Mirage-Pair Benchmark for Metacognitive Monitoring in LLMs
 
 **Track:** Metacognition  
