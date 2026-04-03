@@ -7,9 +7,9 @@
 
 ## Problem Statement
 
-Current AI benchmarks test *what* models know — they measure whether a model produces the correct answer. They do not test whether a model *knows when it is about to be wrong*. This gap is critical: a deployed system that confidently answers a misleading question causes far more harm than one that correctly flags its own uncertainty.
+Current AI benchmarks test *what* models know; they measure whether a model produces the correct answer. They do not test whether a model *knows when it is about to be wrong*. This gap is critical: a deployed system that confidently answers a misleading question causes far more harm than one that correctly flags its own uncertainty.
 
-**CognitiveMirage** is built on one core insight: **the ability to detect a trap before answering is a stronger signal of metacognitive ability than correctness alone.** We achieve this by constructing paired tasks — a *clean* variant that is genuinely answerable, and a *mirage* variant that looks superficially identical but contains a hidden flaw. We then measure three things:
+**CognitiveMirage** is built on one core insight: **the ability to detect a trap before answering is a stronger signal of metacognitive ability than correctness alone.** We achieve this by constructing paired tasks: a *clean* variant that is genuinely answerable and a *mirage* variant that appears superficially identical but contains a hidden flaw. We then measure three things:
 
 1. **Trap Detection Rate (TDR):** Does the model flag the flaw *before* answering?
 2. **Calibration Delta (CD):** Does expressed confidence drop appropriately on mirage tasks?
@@ -42,7 +42,7 @@ For each family, mirage tasks are carefully crafted so that:
 
 Responses are evaluated on three dimensions:
 
-**TDR (Trap Detection Rate):** Binary signal — did the model include explicit language indicating something is wrong with the question? (e.g., "cannot be determined," "the premise is incorrect," "units are mixed," "ambiguous pronoun") This is scored via a curated keyword taxonomy validated against human raters.
+**TDR (Trap Detection Rate):** Binary signal; did the model include explicit language indicating something is wrong with the question? (e.g., "cannot be determined," "the premise is incorrect," "units are mixed," "ambiguous pronoun") This is scored via a curated keyword taxonomy validated against human raters.
 
 **Calibration Delta:** Expressed confidence is extracted from response text (keywords: "highly confident," "low confidence," percentage expressions, etc.) and compared between clean and mirage variants. A positive delta (clean > mirage) indicates appropriate confidence adjustment.
 
