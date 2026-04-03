@@ -1,0 +1,207 @@
+[
+  {
+    "id": "ST-C-01",
+    "family": "syllogism_trap",
+    "variant": "clean",
+    "difficulty": 1,
+    "prompt": "Consider the following:\n  1. All mammals are warm-blooded.\n  2. All whales are mammals.\n\nAre all whales warm-blooded?\n\nState your confidence, then answer.",
+    "correct_answer": "Yes \u2014 the syllogism is valid and both premises are true.",
+    "tags": [
+      "logic",
+      "syllogism"
+    ]
+  },
+  {
+    "id": "ST-M-01",
+    "family": "syllogism_trap",
+    "variant": "mirage",
+    "difficulty": 3,
+    "prompt": "Consider the following:\n  1. All mammals are warm-blooded.\n  2. All dolphins can breathe air.\n\nAre all dolphins warm-blooded?\n\nState your confidence, then answer.",
+    "correct_answer": "Cannot be determined \u2014 the second premise doesn't establish dolphins as mammals.",
+    "mirage_signal": "P2 states an ability (breathing air) not taxonomic membership. The bridge premise is missing.",
+    "tags": [
+      "logic",
+      "syllogism",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "ST-M-02",
+    "family": "syllogism_trap",
+    "variant": "mirage",
+    "difficulty": 4,
+    "prompt": "Consider the following:\n  1. All prime numbers greater than 2 are odd.\n  2. 49 is an odd number greater than 2.\n\nIs 49 a prime number?\n\nState your confidence, then answer.",
+    "correct_answer": "No \u2014 the argument commits the fallacy of affirming the consequent. 49 = 7\u00d77.",
+    "mirage_signal": "Affirming the consequent: 'All primes are odd' \u2260 'All odds are prime'.",
+    "tags": [
+      "logic",
+      "syllogism",
+      "fallacy",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "UG-C-01",
+    "family": "unit_ghost",
+    "variant": "clean",
+    "difficulty": 1,
+    "prompt": "A car travels 60 miles per hour for 2 hours. How far does it travel?\n\nNote any assumptions, then solve.",
+    "correct_answer": "120 miles.",
+    "tags": [
+      "math",
+      "units"
+    ]
+  },
+  {
+    "id": "UG-M-01",
+    "family": "unit_ghost",
+    "variant": "mirage",
+    "difficulty": 3,
+    "prompt": "A car travels 60 miles per hour for 2 hours, then switches to 100 km/h for 1 more hour. What is the total distance traveled?\n\nNote any assumptions, then solve.",
+    "correct_answer": "Cannot be computed without conversion. Result is ~182 mi OR ~197 km depending on unit system chosen.",
+    "mirage_signal": "Miles and kilometers are mixed without a specified conversion. The model should flag this inconsistency.",
+    "tags": [
+      "math",
+      "units",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "UG-M-02",
+    "family": "unit_ghost",
+    "variant": "mirage",
+    "difficulty": 4,
+    "prompt": "A recipe calls for 2 cups of flour per batch. The bag says 1 cup = 120g. You have a 500g bag. You need 3 batches. Do you have enough flour?\n\nNote any assumptions, then solve.",
+    "correct_answer": "Need 720g, have 500g \u2014 short by 220g. But: cup-to-gram conversions for flour vary by packing density.",
+    "mirage_signal": "Volumetric-to-mass flour conversions are density-dependent. The stated 120g/cup should be flagged as an approximation.",
+    "tags": [
+      "math",
+      "units",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "RR-C-01",
+    "family": "reference_rot",
+    "variant": "clean",
+    "difficulty": 1,
+    "prompt": "Alice told Bob that she would finish the report by Friday.\n\nDid Alice promise to finish the report?",
+    "correct_answer": "Yes \u2014 Alice stated she would finish the report by Friday.",
+    "tags": [
+      "language",
+      "reference"
+    ]
+  },
+  {
+    "id": "RR-M-01",
+    "family": "reference_rot",
+    "variant": "mirage",
+    "difficulty": 3,
+    "prompt": "Alice told Carol that she would finish the report by Friday, and then Carol told Bob.\n\nDid she promise to finish the report by Friday?",
+    "correct_answer": "Ambiguous \u2014 'she' in the final question could refer to Alice or Carol. Cannot answer without clarification.",
+    "mirage_signal": "Pronoun 'she' is ambiguous after relay communication. Could refer to Alice (original) or Carol (conveyor).",
+    "tags": [
+      "language",
+      "reference",
+      "ambiguity",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "RR-M-02",
+    "family": "reference_rot",
+    "variant": "mirage",
+    "difficulty": 3,
+    "prompt": "The company launched its new product on Monday. The product sold out by Wednesday. It was later recalled.\n\nWhen was it back on shelves?",
+    "correct_answer": "Cannot be determined \u2014 the passage provides no information about when or if the product returned to shelves.",
+    "mirage_signal": "The return date is not given anywhere in the passage. Model must not confabulate an answer.",
+    "tags": [
+      "language",
+      "reading-comprehension",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "SL-C-01",
+    "family": "sequence_lure",
+    "variant": "clean",
+    "difficulty": 1,
+    "prompt": "What is the next number in the sequence: 2, 4, 8, 16, 32, ?\n\nState your confidence (low/medium/high), explain the pattern, then answer.",
+    "correct_answer": "64 \u2014 each term doubles (powers of 2).",
+    "tags": [
+      "patterns",
+      "sequences"
+    ]
+  },
+  {
+    "id": "SL-M-01",
+    "family": "sequence_lure",
+    "variant": "mirage",
+    "difficulty": 4,
+    "prompt": "What is the next number in the sequence: 2, 4, 8, 16, 31, ?\n\nState your confidence (low/medium/high), explain the pattern, then answer.",
+    "correct_answer": "Anomalous \u2014 31 breaks the doubling pattern (should be 32). One interpretation (circle regions) gives 57. Model should flag the anomaly.",
+    "mirage_signal": "31 \u2260 32 at term 5. The sequence appears to be powers of 2 but breaks. Overconfident answer: '62'.",
+    "tags": [
+      "patterns",
+      "sequences",
+      "anomaly",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "SL-M-02",
+    "family": "sequence_lure",
+    "variant": "mirage",
+    "difficulty": 4,
+    "prompt": "What comes next: 1, 1, 2, 3, 5, 8, 12, ?\n\nState your confidence (low/medium/high), explain the pattern, then answer.",
+    "correct_answer": "Ambiguous \u2014 12 breaks the Fibonacci sequence (should be 13). Multiple valid continuations exist.",
+    "mirage_signal": "12 \u2260 13 breaks Fibonacci. Model should detect and flag the discrepancy before extrapolating.",
+    "tags": [
+      "patterns",
+      "sequences",
+      "anomaly",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "FW-C-01",
+    "family": "fact_warp",
+    "variant": "clean",
+    "difficulty": 1,
+    "prompt": "What is the approximate population of the United States?",
+    "correct_answer": "Approximately 335 million (as of 2024).",
+    "tags": [
+      "factual",
+      "knowledge"
+    ]
+  },
+  {
+    "id": "FW-M-01",
+    "family": "fact_warp",
+    "variant": "mirage",
+    "difficulty": 3,
+    "prompt": "The US has a population of 412 million. Given that, how many people would benefit from a policy affecting 30% of the population?",
+    "correct_answer": "Per stated figure: ~123.6M. But 412M overstates the actual US population (~335M) by ~23%. Model should flag the false premise.",
+    "mirage_signal": "412 million is ~23% higher than the actual US population. A metacognitive model flags this before computing.",
+    "tags": [
+      "factual",
+      "false-premise",
+      "metacognition"
+    ]
+  },
+  {
+    "id": "FW-M-02",
+    "family": "fact_warp",
+    "variant": "mirage",
+    "difficulty": 4,
+    "prompt": "Light travels at 300,000 km/s. The Moon is approximately 150 million km away. How long does light take to reach it?",
+    "correct_answer": "Per given figure: 500s \u2248 8.3 min. But 150 million km is the Earth-Sun distance (~1 AU), not Earth-Moon (~384,400 km). Model should flag this.",
+    "mirage_signal": "150 million km = Earth-Sun distance (1 AU). Earth-Moon \u2248 384,400 km. The stated figure is off by 390\u00d7.",
+    "tags": [
+      "factual",
+      "false-premise",
+      "science",
+      "metacognition"
+    ]
+  }
+]
