@@ -398,5 +398,91 @@
     "cohens_d": 2.6548
   },
   "mi_spread": 0.1672,
-  "key_finding": "NOVEL FINDING: While global TDR-accuracy correlation is r=-0.94, within the 'control_baseline' family the correlation is r=0.00 \u2014 near zero or negative. This confirms that metacognitive monitoring and factual accuracy are dissociable cognitive faculties: a model can be highly accurate on clean tasks while systematically failing to detect expertise-level traps. Cohen's d=2.65 confirms the mirage tasks are non-trivially harder."
+  "key_finding": "NOVEL FINDING: While global TDR-accuracy correlation is r=-0.94, within the 'control_baseline' family the correlation is r=0.00 \u2014 near zero or negative. This confirms that metacognitive monitoring and factual accuracy are dissociable cognitive faculties: a model can be highly accurate on clean tasks while systematically failing to detect expertise-level traps. Cohen's d=2.65 confirms the mirage tasks are non-trivially harder.",
+  "loo_stability": {
+    "global_tdr_vs_accuracy": {
+      "loo_r_values": [
+        -0.9367,
+        -0.942,
+        -0.9403,
+        -0.9378,
+        -0.9702,
+        -0.9716
+      ],
+      "min_abs_r": 0.9367,
+      "sign_stable": true,
+      "min_r": -0.9716,
+      "max_r": -0.9367
+    },
+    "family_confidence_inversion_tdr_vs_accuracy": {
+      "loo_r_values": [
+        0.9682,
+        0.9682,
+        0.9631,
+        1.0,
+        0.9631,
+        0.9631
+      ],
+      "min_abs_r": 0.9631,
+      "sign_stable": true,
+      "min_r": 0.9631,
+      "max_r": 1.0
+    },
+    "family_control_baseline_tdr_vs_accuracy": {
+      "loo_r_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min_abs_r": 0.0,
+      "sign_stable": true,
+      "min_r": 0.0,
+      "max_r": 0.0
+    },
+    "family_expertise_trap_tdr_vs_accuracy": {
+      "loo_r_values": [
+        -0.3889,
+        -0.6124,
+        -0.5906,
+        -0.5474,
+        -0.6846,
+        -0.6163
+      ],
+      "min_abs_r": 0.3889,
+      "sign_stable": true,
+      "min_r": -0.6846,
+      "max_r": -0.3889
+    },
+    "family_forced_abstention_tdr_vs_accuracy": {
+      "loo_r_values": [
+        -0.8951,
+        -0.9356,
+        -0.9356,
+        -0.8951,
+        -0.9129,
+        -0.98
+      ],
+      "min_abs_r": 0.8951,
+      "sign_stable": true,
+      "min_r": -0.98,
+      "max_r": -0.8951
+    },
+    "family_over_specification_tdr_vs_accuracy": {
+      "loo_r_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min_abs_r": 0.0,
+      "sign_stable": true,
+      "min_r": 0.0,
+      "max_r": 0.0
+    }
+  }
 }
