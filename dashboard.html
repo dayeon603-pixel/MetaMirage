@@ -211,6 +211,21 @@
     height: 6px; border-radius: 3px;
   }
   .corr-val { font-family: monospace; font-size: 0.8rem; width: 4.5rem; text-align: right; flex-shrink: 0; }
+  .corr-ci-line {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    height: 2px; background: rgba(255,255,255,0.28); border-radius: 1px;
+    pointer-events: none;
+  }
+  .corr-ci-tick {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 1.5px; height: 11px; background: rgba(255,255,255,0.45);
+    pointer-events: none;
+  }
+  .corr-ci-excl-badge {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    font-size: 0.6rem; color: #f59e0b; font-weight: 700; line-height: 1;
+    letter-spacing: 0.04em;
+  }
 
   /* Legend */
   .legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 0.75rem; }
@@ -479,19 +494,35 @@ MODELS.forEach((m, i) => {
 // ── Family Correlations ──────────────────────────────────────
 (function buildFamilyCorr() {
   const el = document.getElementById('family-corr');
+  // Scale: r = ±1 maps to left = 5% / 95% (i.e. 50 ± 45%)
+  const rToLeft = r => 50 + r * 45;
   FAMILY_CORR.forEach(fc => {
     const absR = Math.abs(fc.r);
     const positive = fc.r >= 0;
     const color = positive ? '#6366f1' : '#ec4899';
     const sigColor = Math.abs(fc.r) >= 0.85 ? '#f59e0b' : '';
-    const barW = absR * 45; // max 45% of half
+    const barW = absR * 45;
     const leftPct = positive ? 50 : (50 - barW);
     const widthPct = barW;
-    const pLabel = fc.p === '<0.001' ? '<0.001' : `p=${fc.p}`;
     const sig = (fc.p === '<0.001') ? '***' : '';
     const ciLabel = fc.ci ? ` [${fc.ci[0] >= 0 ? '+' : ''}${fc.ci[0].toFixed(2)}, ${fc.ci[1] >= 0 ? '+' : ''}${fc.ci[1].toFixed(2)}]` : '';
     const excludesZero = fc.ci && ((fc.ci[0] > 0 && fc.ci[1] > 0) || (fc.ci[0] < 0 && fc.ci[1] < 0));
     const titleText = `${fc.name}: r=${fc.r.toFixed(4)}, p=${fc.p}${ciLabel ? ', 95% CI' + ciLabel : ''}${excludesZero ? ' — CI excludes zero' : ''}`;
+
+    // CI whisker visuals
+    let ciHtml = '';
+    if (fc.ci) {
+      const loLeft = rToLeft(fc.ci[0]);
+      const hiLeft = rToLeft(fc.ci[1]);
+      const lineLeft = Math.min(loLeft, hiLeft);
+      const lineWidth = Math.abs(hiLeft - loLeft);
+      ciHtml = `
+        <div class="corr-ci-line" style="left:${lineLeft}%;width:${lineWidth}%;"></div>
+        <div class="corr-ci-tick" style="left:${loLeft}%;"></div>
+        <div class="corr-ci-tick" style="left:${hiLeft}%;"></div>
+        ${excludesZero ? `<div class="corr-ci-excl-badge" title="95% CI excludes zero">✓0</div>` : ''}`;
+    }
+
     const row = document.createElement('div');
     row.className = 'corr-row';
     row.innerHTML = `
@@ -500,6 +531,7 @@ MODELS.forEach((m, i) => {
         <div class="corr-bar-bg"></div>
         <div class="corr-center"></div>
         ${fc.r !== 0 ? `<div class="corr-fill" style="left:${leftPct}%;width:${widthPct}%;background:${color};"></div>` : ''}
+        ${ciHtml}
       </div>
       <div class="corr-val" style="color:${sigColor || color}" title="95% CI${ciLabel}">${fc.r > 0 ? '+' : ''}${fc.r.toFixed(2)}${sig}${fc.ci ? `<span style="font-size:0.7em;opacity:0.7;margin-left:2px;">${ciLabel}</span>` : ''}</div>
     `;
