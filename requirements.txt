@@ -1,0 +1,15 @@
+# CognitiveMirage — Python dependencies
+# For running v3_judge_evaluator.py (requires Anthropic API key)
+anthropic>=0.34.0
+
+# For running v3_statistical_analysis.py (stdlib only — no extra deps)
+# scipy is optional (Fisher CI is computed manually via tanh/atanh)
+
+# For kaggle_task.py in Kaggle Benchmarks environment
+# kaggle-benchmarks   # installed automatically on Kaggle
+
+# For task_generator.py
+# No external deps beyond stdlib
+
+# Development / analysis
+numpy>=1.24.0
