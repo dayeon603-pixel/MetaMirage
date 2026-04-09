@@ -84,6 +84,7 @@ metaMirage/
 ├── v3_analysis.json             # Full results from 6-model evaluation run
 ├── kaggle_task.py               # Kaggle Benchmarks SDK wrapper (loads v3_tasks_50.json)
 ├── dashboard.html               # Interactive results dashboard (self-contained HTML)
+├── kaggle_tasks.json            # Legacy v1/v2 task set (superseded by v3_tasks_50.json)
 ├── task_generator.py            # Task generation utilities
 ├── evaluator.py                 # v1/v2 heuristic evaluator (legacy)
 └── devlogs/                     # Session devlogs
