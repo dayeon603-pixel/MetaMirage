@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CognitiveMirage — Results Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3e;
+    --accent: #6366f1;
+    --accent2: #ec4899;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --card: #1e2130;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #1a1d27 0%, #12151f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.5rem;
+  }
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 0.25rem;
+  }
+  header .subtitle {
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+  header .badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .finding-banner {
+    background: linear-gradient(90deg, rgba(99,102,241,0.15), rgba(236,72,153,0.08));
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 2.5rem 0;
+    font-size: 0.9rem;
+  }
+  .finding-banner strong { color: #a5b4fc; }
+  .finding-banner .stat {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #c7d2fe;
+    margin: 0 2px;
+  }
+  main {
+    padding: 1.5rem 2.5rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+  .card-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-title .r-badge {
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.4);
+    color: #6ee7b7;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  .card-title .r-badge.neg {
+    background: rgba(236,72,153,0.12);
+    border-color: rgba(236,72,153,0.35);
+    color: #f9a8d4;
+  }
+
+  /* Leaderboard table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(42,45,62,0.6);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .rank { color: var(--muted); font-weight: 700; width: 2rem; }
+  .rank.gold { color: #fbbf24; }
+  .rank.silver { color: #94a3b8; }
+  .rank.bronze { color: #b45309; }
+  .model-name { font-weight: 600; color: #fff; }
+  .mi-val { font-family: monospace; font-weight: 700; }
+  .tdr-bar-wrap { display: flex; align-items: center; gap: 0.5rem; }
+  .tdr-bar {
+    height: 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .num { font-family: 'Courier New', monospace; }
+  .pos { color: #6ee7b7; }
+  .neg-c { color: #f87171; }
+
+  /* SVG chart area */
+  svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  /* Stat cards */
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+  }
+  .stat-card .big { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+  .stat-card .label { color: var(--muted); font-size: 0.78rem; margin-top: 0.2rem; }
+  .stat-card .sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.35rem; }
+  .accent-indigo { color: #818cf8; }
+  .accent-pink { color: #f472b6; }
+  .accent-green { color: #34d399; }
+
+  /* Model color dots */
+  .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+
+  /* Family correlations */
+  .corr-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    gap: 0.6rem;
+  }
+  .corr-label { width: 9rem; font-size: 0.77rem; color: var(--text); flex-shrink: 0; }
+  .corr-bar-wrap { flex: 1; position: relative; height: 20px; }
+  .corr-bar-bg {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px;
+  }
+  .corr-center {
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    width: 1px; background: rgba(255,255,255,0.2);
+  }
+  .corr-fill {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    height: 6px; border-radius: 3px;
+  }
+  .corr-val { font-family: monospace; font-size: 0.8rem; width: 4.5rem; text-align: right; flex-shrink: 0; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 0.75rem; }
+  .legend-item { display: flex; align-items: center; font-size: 0.75rem; color: var(--muted); }
+
+  .section-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CognitiveMirage <span class="badge">v3</span></h1>
+  <div class="subtitle">Metacognitive Monitoring Benchmark · 50 tasks · 6 models · LLM-as-Judge evaluation</div>
+</header>
+
+<div class="finding-banner">
+  <strong>Key Finding — The Sign-Flip:</strong>
+  Global TDR–accuracy correlation
+  <span class="stat">r = −0.94</span> (95% CI [−0.99, −0.56], p &lt; 0.001, n = 6).
+  The two most accurate models (claude-opus-4-5 at 100%, gpt-4o at 98.2%) rank <em>last</em> on metacognitive monitoring.
+  Within <code>confidence_inversion</code>: <span class="stat">r = +0.97</span> (95% CI [+0.75, +1.00]).
+  Within <code>forced_abstention</code>: <span class="stat">r = −0.92</span> (95% CI [−0.99, −0.42]).
+  Both CIs exclude zero. LOO-stable. Cohen's d = 2.65.
+</div>
+
+<main>
+
+  <!-- Stat strip -->
+  <div class="grid-3" style="margin-top:1.25rem;">
+    <div class="stat-card">
+      <div class="big accent-pink">−0.94</div>
+      <div class="label">Global TDR vs Accuracy</div>
+      <div class="sub">95% CI [−0.99, −0.56] · LOO-stable</div>
+    </div>
+    <div class="stat-card">
+      <div class="big accent-green">+0.97</div>
+      <div class="label">confidence_inversion r</div>
+      <div class="sub">95% CI [+0.75, +1.00] · CI excludes zero</div>
+    </div>
+    <div class="stat-card">
+      <div class="big accent-indigo">2.65</div>
+      <div class="label">Cohen's d (clean vs mirage)</div>
+      <div class="sub">MI spread: 0.167</div>
+    </div>
+  </div>
+
+  <!-- Leaderboard + Scatter -->
+  <div class="section-title">Model Rankings &amp; Sign-Flip Visualization</div>
+  <div class="grid-2">
+
+    <!-- Leaderboard -->
+    <div class="card">
+      <div class="card-title">Leaderboard — Metacognitive Index</div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Model</th>
+            <th>MI</th>
+            <th>TDR</th>
+            <th>Clean Acc</th>
+            <th>Calib Δ</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Scatter: TDR vs Accuracy -->
+    <div class="card">
+      <div class="card-title">
+        TDR vs Clean Accuracy
+        <span class="r-badge neg">r = −0.94</span>
+      </div>
+      <svg id="scatter" width="100%" viewBox="0 0 360 260" style="display:block;"></svg>
+      <div class="legend" id="scatter-legend"></div>
+    </div>
+
+  </div>
+
+  <!-- Family correlations + Radar -->
+  <div class="section-title">Family-Level Analysis</div>
+  <div class="grid-2">
+
+    <!-- Family correlations -->
+    <div class="card">
+      <div class="card-title">Per-Family TDR–Accuracy Correlation</div>
+      <div id="family-corr"></div>
+      <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
+        Sign-flip: forced_abstention (r=−0.92) vs confidence_inversion (r=+0.97).<br>
+        Same capability metric — opposite directions. Metacognition is dissociable from accuracy.
+      </div>
+    </div>
+
+    <!-- Per-model TDR by family -->
+    <div class="card">
+      <div class="card-title">TDR by Family (per model)</div>
+      <svg id="tdr-family" width="100%" viewBox="0 0 360 220" style="display:block;"></svg>
+      <div class="legend" id="family-legend"></div>
+    </div>
+
+  </div>
+
+  <!-- Model profiles -->
+  <div class="section-title">Model Metacognitive Profiles</div>
+  <div class="card">
+    <div class="card-title">Per-Model Profile — MI · TDR (global) · Clean Acc · Calib Δ · Mirage Score</div>
+    <svg id="profiles" width="100%" viewBox="0 0 900 160" style="display:block;"></svg>
+  </div>
+
+</main>
+
+<script>
+const MODELS = [
+  { name: 'gpt-4o-mini',       color: '#f59e0b', mi: 0.5741, tdr: 0.8453, clean: 0.7593, calib: 0.3028,
+    families: { confidence_inversion: 0.667, forced_abstention: 0.889, expertise_trap: 1.000, control_baseline: 0.000, over_specification: 0.625 } },
+  { name: 'llama-3-70b',       color: '#10b981', mi: 0.5376, tdr: 0.8290, clean: 0.6481, calib: 0.2462,
+    families: { confidence_inversion: 0.667, forced_abstention: 0.889, expertise_trap: 0.833, control_baseline: 0.000, over_specification: 0.875 } },
+  { name: 'claude-sonnet-4-5', color: '#6366f1', mi: 0.5196, tdr: 0.6645, clean: 0.9259, calib: 0.3747,
+    families: { confidence_inversion: 1.000, forced_abstention: 0.778, expertise_trap: 0.333, control_baseline: 0.000, over_specification: 0.750 } },
+  { name: 'gemini-1.5-pro',    color: '#8b5cf6', mi: 0.5082, tdr: 0.7723, clean: 0.7778, calib: 0.2440,
+    families: { confidence_inversion: 0.667, forced_abstention: 0.778, expertise_trap: 0.833, control_baseline: 0.000, over_specification: 0.750 } },
+  { name: 'claude-opus-4-5',   color: '#ec4899', mi: 0.4085, tdr: 0.5545, clean: 1.0000, calib: 0.2625,
+    families: { confidence_inversion: 1.000, forced_abstention: 0.556, expertise_trap: 0.167, control_baseline: 0.000, over_specification: 0.875 } },
+  { name: 'gpt-4o',            color: '#14b8a6', mi: 0.4069, tdr: 0.6264, clean: 0.9815, calib: 0.1874,
+    families: { confidence_inversion: 0.889, forced_abstention: 0.556, expertise_trap: 0.500, control_baseline: 0.000, over_specification: 0.750 } },
+];
+
+const FAMILY_CORR = [
+  { name: 'confidence_inversion', r: 0.9701, p: '<0.001', ci: [0.745, 0.997] },
+  { name: 'forced_abstention',    r: -0.9183, p: '<0.001', ci: [-0.991, -0.419] },
+  { name: 'expertise_trap',       r: -0.5571, p: '0.18',  ci: [-0.921, 0.247] },
+  { name: 'over_specification',   r: 0.0,    p: '1.00',  ci: null },
+  { name: 'control_baseline',     r: 0.0,    p: '1.00',  ci: null },
+];
+
+const FAMILIES = ['confidence_inversion', 'forced_abstention', 'expertise_trap', 'over_specification'];
+const FAM_LABELS = { confidence_inversion: 'Conf. Inv.', forced_abstention: 'Forced Abs.', expertise_trap: 'Expertise', over_specification: 'Over-Spec.', control_baseline: 'Control' };
+
+// ── Leaderboard ──────────────────────────────────────────────
+const tbody = document.getElementById('leaderboard-body');
+const ranks = ['gold', 'silver', 'bronze', '', '', ''];
+MODELS.forEach((m, i) => {
+  const tr = document.createElement('tr');
+  const miColor = m.mi >= 0.52 ? '#34d399' : m.mi >= 0.48 ? '#fbbf24' : '#f87171';
+  const tdrPct = (m.tdr * 100).toFixed(1);
+  const cleanPct = (m.clean * 100).toFixed(1);
+  tr.innerHTML = `
+    <td class="rank ${ranks[i]}">${i+1}</td>
+    <td class="model-name"><span class="dot" style="background:${m.color}"></span>${m.name}</td>
+    <td class="mi-val" style="color:${miColor}">${m.mi.toFixed(3)}</td>
+    <td>
+      <div class="tdr-bar-wrap">
+        <div class="tdr-bar" style="width:${tdrPct * 0.6}px;background:${m.color};opacity:0.8;"></div>
+        <span class="num">${tdrPct}%</span>
+      </div>
+    </td>
+    <td class="num">${cleanPct}%</td>
+    <td class="num pos">+${m.calib.toFixed(3)}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ── Scatter Plot ──────────────────────────────────────────────
+(function buildScatter() {
+  const svg = document.getElementById('scatter');
+  const W = 360, H = 260;
+  const pad = { left: 45, right: 20, top: 20, bottom: 40 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  const xMin = 0.60, xMax = 1.05;
+  const yMin = 0.45, yMax = 0.95;
+  const xS = v => pad.left + (v - xMin) / (xMax - xMin) * cW;
+  const yS = v => pad.top + cH - (v - yMin) / (yMax - yMin) * cH;
+
+  let html = '';
+
+  // Grid lines
+  [0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00].forEach(v => {
+    const x = xS(v);
+    html += `<line x1="${x}" y1="${pad.top}" x2="${x}" y2="${pad.top+cH}" stroke="#2a2d3e" stroke-width="1"/>`;
+    html += `<text x="${x}" y="${pad.top+cH+14}" text-anchor="middle" fill="#6b7280" font-size="9">${(v*100).toFixed(0)}%</text>`;
+  });
+  [0.50, 0.60, 0.70, 0.80, 0.90].forEach(v => {
+    const y = yS(v);
+    html += `<line x1="${pad.left}" y1="${y}" x2="${pad.left+cW}" y2="${y}" stroke="#2a2d3e" stroke-width="1"/>`;
+    html += `<text x="${pad.left-6}" y="${y+4}" text-anchor="end" fill="#6b7280" font-size="9">${(v*100).toFixed(0)}%</text>`;
+  });
+
+  // Regression line + 95% CI band (Fisher z-transform; r=-0.94, CI=[-0.994,-0.564])
+  // OLS: x=clean acc, y=tdr
+  const xs = MODELS.map(m => m.clean);
+  const ys = MODELS.map(m => m.tdr);
+  const mx = xs.reduce((a,b)=>a+b,0)/6;
+  const my = ys.reduce((a,b)=>a+b,0)/6;
+  const num = xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
+  const den = xs.reduce((s,x)=>s+(x-mx)**2,0);
+  const sdx = Math.sqrt(den/5);
+  const sdy = Math.sqrt(ys.reduce((s,y)=>s+(y-my)**2,0)/5);
+  const slope = num/den;
+  const intercept = my - slope*mx;
+  // CI band: slopes for r_lo=-0.994 and r_hi=-0.564
+  const r_lo = -0.994, r_hi = -0.564;
+  const slope_lo = r_lo * sdy / sdx;
+  const slope_hi = r_hi * sdy / sdx;
+  const int_lo = my - slope_lo * mx;
+  const int_hi = my - slope_hi * mx;
+  // Draw CI band as a filled polygon (4 corners at xMin, xMax for lo and hi slopes)
+  const pts = [
+    [xS(xMin), yS(slope_lo*xMin+int_lo)],
+    [xS(xMax), yS(slope_lo*xMax+int_lo)],
+    [xS(xMax), yS(slope_hi*xMax+int_hi)],
+    [xS(xMin), yS(slope_hi*xMin+int_hi)],
+  ];
+  const polyPts = pts.map(p=>p.join(',')).join(' ');
+  html += `<polygon points="${polyPts}" fill="#ec4899" opacity="0.08"/>`;
+  const x1r = xMin, x2r = xMax;
+  const y1r = slope*x1r + intercept;
+  const y2r = slope*x2r + intercept;
+  html += `<line x1="${xS(x1r)}" y1="${yS(y1r)}" x2="${xS(x2r)}" y2="${yS(y2r)}" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.7"/>`;
+  html += `<text x="${xS(0.72)}" y="${yS(slope*0.72+intercept)-10}" fill="#f9a8d4" font-size="9" font-style="italic">r = −0.94 [CI: −0.99, −0.56]</text>`;
+
+  // Axes
+  html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top+cH}" stroke="#4b5563" stroke-width="1"/>`;
+  html += `<line x1="${pad.left}" y1="${pad.top+cH}" x2="${pad.left+cW}" y2="${pad.top+cH}" stroke="#4b5563" stroke-width="1"/>`;
+  html += `<text x="${pad.left+cW/2}" y="${H-4}" text-anchor="middle" fill="#8892a4" font-size="9">Clean Accuracy →</text>`;
+  html += `<text x="10" y="${pad.top+cH/2}" text-anchor="middle" fill="#8892a4" font-size="9" transform="rotate(-90,10,${pad.top+cH/2})">TDR (global) →</text>`;
+
+  // Points
+  MODELS.forEach(m => {
+    const cx = xS(m.clean);
+    const cy = yS(m.tdr);
+    html += `<circle cx="${cx}" cy="${cy}" r="7" fill="${m.color}" opacity="0.85"/>`;
+    // label offset
+    let dx = 10, dy = -4;
+    if (m.name === 'claude-opus-4-5') { dx = -75; dy = -12; }
+    if (m.name === 'gpt-4o') { dx = 10; dy = 8; }
+    if (m.name === 'claude-sonnet-4-5') { dx = -85; dy = -12; }
+    if (m.name === 'gemini-1.5-pro') { dx = 10; dy = 8; }
+    const shortName = { 'gpt-4o-mini': 'gpt-4o-mini', 'llama-3-70b': 'llama-3-70b', 'claude-sonnet-4-5': 'sonnet-4-5', 'gemini-1.5-pro': 'gemini-pro', 'claude-opus-4-5': 'opus-4-5', 'gpt-4o': 'gpt-4o' };
+    html += `<text x="${cx+dx}" y="${cy+dy}" fill="${m.color}" font-size="8.5" font-weight="600">${shortName[m.name]}</text>`;
+  });
+
+  svg.innerHTML = html;
+
+  // Legend
+  const legendEl = document.getElementById('scatter-legend');
+  MODELS.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="dot" style="background:${m.color}"></span>${m.name}`;
+    legendEl.appendChild(item);
+  });
+})();
+
+// ── Family Correlations ──────────────────────────────────────
+(function buildFamilyCorr() {
+  const el = document.getElementById('family-corr');
+  FAMILY_CORR.forEach(fc => {
+    const absR = Math.abs(fc.r);
+    const positive = fc.r >= 0;
+    const color = positive ? '#6366f1' : '#ec4899';
+    const sigColor = Math.abs(fc.r) >= 0.85 ? '#f59e0b' : '';
+    const barW = absR * 45; // max 45% of half
+    const leftPct = positive ? 50 : (50 - barW);
+    const widthPct = barW;
+    const pLabel = fc.p === '<0.001' ? '<0.001' : `p=${fc.p}`;
+    const sig = (fc.p === '<0.001') ? '***' : '';
+    const ciLabel = fc.ci ? ` [${fc.ci[0] >= 0 ? '+' : ''}${fc.ci[0].toFixed(2)}, ${fc.ci[1] >= 0 ? '+' : ''}${fc.ci[1].toFixed(2)}]` : '';
+    const excludesZero = fc.ci && ((fc.ci[0] > 0 && fc.ci[1] > 0) || (fc.ci[0] < 0 && fc.ci[1] < 0));
+    const titleText = `${fc.name}: r=${fc.r.toFixed(4)}, p=${fc.p}${ciLabel ? ', 95% CI' + ciLabel : ''}${excludesZero ? ' — CI excludes zero' : ''}`;
+    const row = document.createElement('div');
+    row.className = 'corr-row';
+    row.innerHTML = `
+      <div class="corr-label" title="${titleText}">${FAM_LABELS[fc.name]}</div>
+      <div class="corr-bar-wrap">
+        <div class="corr-bar-bg"></div>
+        <div class="corr-center"></div>
+        ${fc.r !== 0 ? `<div class="corr-fill" style="left:${leftPct}%;width:${widthPct}%;background:${color};"></div>` : ''}
+      </div>
+      <div class="corr-val" style="color:${sigColor || color}" title="95% CI${ciLabel}">${fc.r > 0 ? '+' : ''}${fc.r.toFixed(2)}${sig}${fc.ci ? `<span style="font-size:0.7em;opacity:0.7;margin-left:2px;">${ciLabel}</span>` : ''}</div>
+    `;
+    el.appendChild(row);
+  });
+})();
+
+// ── TDR by Family (grouped bar) ──────────────────────────────
+(function buildTDRFamily() {
+  const svg = document.getElementById('tdr-family');
+  const W = 360, H = 220;
+  const pad = { left: 45, right: 10, top: 15, bottom: 45 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  const fams = FAMILIES;
+  const nFam = fams.length;
+  const nModel = MODELS.length;
+  const groupW = cW / nFam;
+  const barW = groupW / (nModel + 1.5);
+
+  let html = '';
+
+  // Grid
+  [0.25, 0.50, 0.75, 1.00].forEach(v => {
+    const y = pad.top + cH - v * cH;
+    html += `<line x1="${pad.left}" y1="${y}" x2="${pad.left+cW}" y2="${y}" stroke="#2a2d3e" stroke-width="1"/>`;
+    html += `<text x="${pad.left-6}" y="${y+4}" text-anchor="end" fill="#6b7280" font-size="9">${(v*100).toFixed(0)}%</text>`;
+  });
+
+  fams.forEach((fam, fi) => {
+    const gx = pad.left + fi * groupW;
+    const cx = gx + groupW / 2;
+
+    // Family label
+    html += `<text x="${cx}" y="${H-5}" text-anchor="middle" fill="#8892a4" font-size="8.5">${FAM_LABELS[fam]}</text>`;
+    // Separator
+    if (fi > 0) html += `<line x1="${gx}" y1="${pad.top}" x2="${gx}" y2="${pad.top+cH}" stroke="#2a2d3e" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+    MODELS.forEach((m, mi) => {
+      const v = m.families[fam] || 0;
+      const bx = gx + barW * 0.5 + mi * barW;
+      const bh = v * cH;
+      const by = pad.top + cH - bh;
+      html += `<rect x="${bx}" y="${by}" width="${barW * 0.85}" height="${bh}" fill="${m.color}" opacity="0.8" rx="1"/>`;
+    });
+  });
+
+  // Axis
+  html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top+cH}" stroke="#4b5563" stroke-width="1"/>`;
+  html += `<line x1="${pad.left}" y1="${pad.top+cH}" x2="${pad.left+cW}" y2="${pad.top+cH}" stroke="#4b5563" stroke-width="1"/>`;
+  html += `<text x="12" y="${pad.top+cH/2}" text-anchor="middle" fill="#8892a4" font-size="9" transform="rotate(-90,12,${pad.top+cH/2})">TDR →</text>`;
+
+  svg.innerHTML = html;
+
+  // Legend
+  const legendEl = document.getElementById('family-legend');
+  MODELS.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="dot" style="background:${m.color}"></span>${m.name}`;
+    legendEl.appendChild(item);
+  });
+})();
+
+// ── Model Profiles (horizontal bars) ─────────────────────────
+(function buildProfiles() {
+  const svg = document.getElementById('profiles');
+  const W = 900, H = 160;
+  const modelW = W / MODELS.length;
+  const metrics = [
+    { key: 'mi',    label: 'MI',       max: 0.65, color: '#818cf8' },
+    { key: 'tdr',   label: 'TDR',      max: 1.00, color: '#34d399' },
+    { key: 'clean', label: 'CleanAcc', max: 1.00, color: '#60a5fa' },
+    { key: 'calib', label: 'CalibΔ',   max: 0.45, color: '#fbbf24' },
+  ];
+  const nM = metrics.length;
+  const barH = 12;
+  const rowGap = 24;
+  const startY = 25;
+
+  let html = '';
+
+  MODELS.forEach((m, mi) => {
+    const mx = mi * modelW;
+    const cx = mx + modelW / 2;
+
+    // Model name
+    html += `<text x="${cx}" y="14" text-anchor="middle" fill="${m.color}" font-size="8.5" font-weight="700">${m.name}</text>`;
+
+    metrics.forEach((metric, ri) => {
+      const ry = startY + ri * rowGap;
+      const val = m[metric.key];
+      const pct = Math.min(val / metric.max, 1);
+      const bx = mx + 4;
+      const bw = modelW - 8;
+
+      // Background
+      html += `<rect x="${bx}" y="${ry}" width="${bw}" height="${barH}" rx="3" fill="rgba(255,255,255,0.04)"/>`;
+      // Fill
+      html += `<rect x="${bx}" y="${ry}" width="${bw * pct}" height="${barH}" rx="3" fill="${metric.color}" opacity="0.8"/>`;
+      // Label
+      html += `<text x="${bx+3}" y="${ry+9}" fill="#fff" font-size="7.5" font-weight="600" opacity="0.9">${metric.label}</text>`;
+      // Value
+      html += `<text x="${bx+bw-3}" y="${ry+9}" text-anchor="end" fill="${metric.color}" font-size="7.5" font-weight="700">${metric.key === 'calib' ? '+' : ''}${(val*100).toFixed(1)}%</text>`;
+    });
+  });
+
+  svg.innerHTML = html;
+})();
+</script>
+
+</body>
+</html>

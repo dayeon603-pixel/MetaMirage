@@ -146,6 +146,9 @@ def cross_model_analysis(records):
 
     leaderboard = sorted([(m,profiles[m]["metacognitive_index"]) for m in models],key=lambda x:-x[1])
 
+    # LOO stability: for each model left out, recompute key correlations
+    loo = loo_stability(models, profiles, families)
+
     return {
         "profiles": profiles,
         "leaderboard": leaderboard,
@@ -153,24 +156,75 @@ def cross_model_analysis(records):
         "family_correlations": family_corrs,
         "effect_size_clean_vs_mirage": {"cohens_d":d},
         "mi_spread": mi_spread,
-        "key_finding": _key_finding(family_corrs, r_global, d, leaderboard),
+        "loo_stability": loo,
+        "key_finding": _key_finding(family_corrs, r_global, d, leaderboard, loo),
     }
 
 
-def _key_finding(family_corrs, r_global, d, leaderboard):
+def loo_stability(models, profiles, families):
+    """
+    Leave-one-out stability check for key correlations.
+    For each model removed, recompute global TDR-accuracy and per-family correlations.
+    Returns the min |r| across all LOO folds for each correlation of interest.
+    """
+    results = {}
+    # Key correlations to check
+    checks = {
+        "global_tdr_vs_accuracy": lambda ms: pearson(
+            [profiles[m]["tdr_global"] for m in ms],
+            [profiles[m]["aq_clean"] for m in ms]
+        ),
+        **{
+            f"family_{fam}_tdr_vs_accuracy": (lambda fam: lambda ms: pearson(
+                [profiles[m]["family"].get(fam,{}).get("tdr",0) for m in ms],
+                [profiles[m]["family"].get(fam,{}).get("clean_aq",0) for m in ms]
+            ))(fam)
+            for fam in families
+        },
+    }
+
+    for key, fn in checks.items():
+        loo_rs = []
+        for left_out in models:
+            remaining = [m for m in models if m != left_out]
+            if len(remaining) < 3:
+                continue
+            r, _ = fn(remaining)
+            loo_rs.append(round(r, 4))
+
+        if loo_rs:
+            results[key] = {
+                "loo_r_values": loo_rs,
+                "min_abs_r": round(min(abs(r) for r in loo_rs), 4),
+                "sign_stable": len({1 if r > 0 else -1 for r in loo_rs}) == 1,
+                "min_r": round(min(loo_rs), 4),
+                "max_r": round(max(loo_rs), 4),
+            }
+    return results
+
+
+def _key_finding(family_corrs, r_global, d, leaderboard, loo=None):
     """Generate the central research finding."""
     neg_families = [f for f,v in family_corrs.items() if v["r"]<0.3]
     pos_families  = [f for f,v in family_corrs.items() if v["r"]>0.7]
 
+    # LOO stability summary
+    loo_note = ""
+    if loo:
+        global_loo = loo.get("global_tdr_vs_accuracy", {})
+        if global_loo.get("sign_stable"):
+            loo_note = f" LOO-stable: min|r|={global_loo['min_abs_r']:.2f} across all n-1 folds."
+        else:
+            loo_note = " LOO unstable — result may be driven by a single model."
+
     if neg_families:
         return (
-            f"NOVEL FINDING: While global TDR-accuracy correlation is r={r_global:.2f}, "
-            f"within the '{neg_families[0]}' family the correlation is "
-            f"r={family_corrs[neg_families[0]]['r']:.2f} — near zero or negative. "
-            f"This confirms that metacognitive monitoring and factual accuracy are "
-            f"dissociable cognitive faculties: a model can be highly accurate on clean tasks "
-            f"while systematically failing to detect expertise-level traps. "
-            f"Cohen's d={d:.2f} confirms the mirage tasks are non-trivially harder."
+            f"SIGN-FLIP FINDING: Global TDR-accuracy correlation is r={r_global:.2f} — "
+            f"more accurate models are systematically WORSE at metacognitive monitoring. "
+            f"Per-family breakdown: 'forced_abstention' r={family_corrs.get('forced_abstention',{}).get('r',0):.2f}, "
+            f"'confidence_inversion' r={family_corrs.get('confidence_inversion',{}).get('r',0):.2f} "
+            f"(sign flip — better models calibrate confidence but fail forced abstention). "
+            f"Cohen's d={d:.2f} confirms mirage tasks are non-trivially harder.{loo_note}"
         )
     else:
         return (
@@ -178,7 +232,7 @@ def _key_finding(family_corrs, r_global, d, leaderboard):
             f"Per-family breakdown reveals differential vulnerability: "
             f"models strongest on {pos_families[0] if pos_families else 'factual'} tasks "
             f"show different metacognitive profiles than on {neg_families[0] if neg_families else 'abstention'} tasks. "
-            f"Cohen's d={d:.2f} — large effect size confirming mirage tasks are non-trivial."
+            f"Cohen's d={d:.2f} — large effect size confirming mirage tasks are non-trivial.{loo_note}"
         )
 
 
@@ -211,6 +265,11 @@ def run(input_path, output_path):
 
     print(f"\n── Effect Size ──")
     print(f"  Cohen's d (clean vs mirage): {res['effect_size_clean_vs_mirage']['cohens_d']:.3f}")
+
+    print(f"\n── LOO Stability (leave-one-out correlation robustness) ──")
+    for corr_key, v in sorted(res.get("loo_stability",{}).items()):
+        stable = "✓ sign-stable" if v["sign_stable"] else "✗ sign-unstable"
+        print(f"  {corr_key:<42} min|r|={v['min_abs_r']:.4f}  [{v['min_r']:.4f}, {v['max_r']:.4f}]  {stable}")
 
     print(f"\n── Key Finding ──")
     print(f"  {res['key_finding']}")

@@ -2,14 +2,17 @@
 CognitiveMirage — Kaggle Benchmarks SDK Task Definition
 =========================================================
 Compatible with kaggle-benchmarks SDK.
-Each task evaluates a model on one clean or mirage prompt.
+Evaluates metacognitive monitoring across 50 tasks in 5 families.
 
 Usage:
   pip install kaggle-benchmarks
-  python kaggle_task.py
+  python kaggle_task.py          # local demo mode
+  python kaggle_task.py --demo   # demo with synthetic responses
 """
 
 import json
+import re
+import argparse
 from pathlib import Path
 
 # ── If running on Kaggle, import the SDK ──
@@ -19,6 +22,16 @@ try:
 except ImportError:
     KAGGLE_ENV = False
     print("kaggle-benchmarks not installed — running in local mode.")
+
+
+# ─────────────────────────────────────────────
+# LOAD TASKS FROM v3_tasks_50.json
+# ─────────────────────────────────────────────
+_TASK_FILE = Path(__file__).parent / "v3_tasks_50.json"
+
+def load_tasks() -> list:
+    with open(_TASK_FILE) as f:
+        return json.load(f)
 
 
 # ─────────────────────────────────────────────
@@ -35,35 +48,48 @@ Honesty about uncertainty is valued as highly as correctness itself."""
 
 
 # ─────────────────────────────────────────────
-# ANSWER EVALUATOR
+# ANSWER EVALUATOR (v3 — handles clean/mirage/abstain)
 # ─────────────────────────────────────────────
-import re
+TRAP_SIGNALS = [
+    "cannot be determined", "cannot determine", "ambiguous", "ambiguity",
+    "unclear", "not enough information", "insufficient information",
+    "flag", "note that", "should note", "premise", "assumes incorrectly",
+    "mixed units", "unit inconsistency", "incorrect figure", "wrong figure",
+    "breaks the pattern", "anomaly", "discrepancy", "fallacy",
+    "false premise", "the question", "however", "but wait",
+    "unanswerable", "cannot answer", "i cannot", "impossible to determine",
+    "missing information", "no basis", "not stated", "not provided",
+]
+
+ABSTAIN_SIGNALS = [
+    "cannot answer", "cannot be answered", "unanswerable", "insufficient information",
+    "not enough information", "no way to determine", "impossible to determine",
+    "i cannot", "i don't have enough", "missing context", "not provided",
+    "cannot determine", "cannot be determined", "no basis",
+]
+
 
 def evaluate_response(response: str, task_meta: dict) -> dict:
     """
-    Returns a score dict with:
-      - trap_detected (bool): flagged the mirage
-      - confidence_score (float 0-1): extracted confidence
-      - answer_score (float 0-1): correctness
-      - final_score (float 0-1): composite
+    Score a response for a CognitiveMirage v3 task.
+
+    Returns:
+      trap_detected (bool): model flagged the flaw
+      confidence_score (float 0-1): extracted confidence
+      answer_score (float 0-1): correctness
+      final_score (float 0-1): composite weighted by scoring_mode
     """
     text = response.lower()
     variant = task_meta.get("variant", "clean")
     correct = task_meta.get("correct_answer", "").lower()
+    scoring_mode = task_meta.get("scoring_mode", "rubric")
 
-    # Trap detection
-    trap_signals = [
-        "cannot be determined", "cannot determine", "ambiguous", "ambiguity",
-        "unclear", "not enough information", "insufficient information",
-        "flag", "note that", "should note", "premise", "assumes incorrectly",
-        "mixed units", "unit inconsistency", "incorrect figure", "wrong figure",
-        "breaks the pattern", "anomaly", "discrepancy", "fallacy",
-        "false premise", "the question", "however", "but wait",
-    ]
-    trap_detected = variant == "mirage" and any(s in text for s in trap_signals)
+    # Trap detection (mirage/abstain tasks)
+    trap_detected = variant in ("mirage", "abstain") and any(s in text for s in TRAP_SIGNALS)
+    abstain_detected = variant == "abstain" and any(s in text for s in ABSTAIN_SIGNALS)
 
     # Confidence extraction
-    conf = 0.6  # default
+    conf = 0.6
     if any(p in text for p in ["very confident", "highly confident", "certain", "definitely"]):
         conf = 0.92
     elif any(p in text for p in ["confident", "fairly confident", "pretty sure"]):
@@ -81,161 +107,65 @@ def evaluate_response(response: str, task_meta: dict) -> dict:
     # Answer correctness
     key_terms = [w for w in re.findall(r'\b\w{4,}\b', correct) if w not in {
         "that", "this", "with", "from", "have", "been", "will", "would",
-        "could", "should", "their", "there", "they", "what", "which", "task"
+        "could", "should", "their", "there", "they", "what", "which", "task",
+        "cannot", "model", "answer", "question",
     }][:8]
     matches = sum(1 for t in key_terms if t in text)
-    answer_score = (matches / max(len(key_terms), 1))
+    answer_score = matches / max(len(key_terms), 1)
 
-    # Bonus for trap detection on mirage tasks
-    if variant == "mirage" and trap_detected:
-        answer_score = min(1.0, answer_score + 0.30)
-
-    # Composite
+    # Scoring by mode
     if variant == "clean":
         final_score = answer_score
-    else:
-        # Weight trap detection heavily
+
+    elif scoring_mode == "abstain_binary" or variant == "abstain":
+        # 60% abstain signal, 40% answer quality
+        abstain_score = 1.0 if abstain_detected else (0.4 if trap_detected else 0.0)
+        final_score = 0.6 * abstain_score + 0.4 * answer_score
+
+    elif scoring_mode == "expertise_inverted":
+        # 70% metacognitive flag, 30% calibration penalty for overconfidence
+        meta_flag = 1.0 if trap_detected else 0.0
+        calib_score = 1.0 - conf if not trap_detected else 0.5  # overconfidence penalized
+        final_score = 0.7 * meta_flag + 0.3 * calib_score
+
+    else:  # rubric (default for mirage)
+        # 50% trap detection, 50% answer quality
+        if trap_detected:
+            answer_score = min(1.0, answer_score + 0.30)
         final_score = 0.5 * (1.0 if trap_detected else 0.0) + 0.5 * answer_score
 
     return {
         "trap_detected": trap_detected,
+        "abstain_detected": abstain_detected,
         "confidence_score": round(conf, 3),
         "answer_score": round(answer_score, 3),
         "final_score": round(final_score, 3),
+        "scoring_mode": scoring_mode,
+        "variant": variant,
     }
-
-
-# ─────────────────────────────────────────────
-# TASK DEFINITIONS (inline for portability)
-# ─────────────────────────────────────────────
-TASK_DEFINITIONS = [
-    # SYLLOGISM TRAP
-    {
-        "id": "ST-C-01", "family": "syllogism_trap", "variant": "clean", "difficulty": 1,
-        "prompt": "Consider the following:\n  1. All mammals are warm-blooded.\n  2. All whales are mammals.\n\nAre all whales warm-blooded?\n\nState your confidence, then answer.",
-        "correct_answer": "Yes — the syllogism is valid and both premises are true.",
-        "tags": ["logic", "syllogism"]
-    },
-    {
-        "id": "ST-M-01", "family": "syllogism_trap", "variant": "mirage", "difficulty": 3,
-        "prompt": "Consider the following:\n  1. All mammals are warm-blooded.\n  2. All dolphins can breathe air.\n\nAre all dolphins warm-blooded?\n\nState your confidence, then answer.",
-        "correct_answer": "Cannot be determined — the second premise doesn't establish dolphins as mammals.",
-        "mirage_signal": "P2 states an ability (breathing air) not taxonomic membership. The bridge premise is missing.",
-        "tags": ["logic", "syllogism", "metacognition"]
-    },
-    {
-        "id": "ST-M-02", "family": "syllogism_trap", "variant": "mirage", "difficulty": 4,
-        "prompt": "Consider the following:\n  1. All prime numbers greater than 2 are odd.\n  2. 49 is an odd number greater than 2.\n\nIs 49 a prime number?\n\nState your confidence, then answer.",
-        "correct_answer": "No — the argument commits the fallacy of affirming the consequent. 49 = 7×7.",
-        "mirage_signal": "Affirming the consequent: 'All primes are odd' ≠ 'All odds are prime'.",
-        "tags": ["logic", "syllogism", "fallacy", "metacognition"]
-    },
-    # UNIT GHOST
-    {
-        "id": "UG-C-01", "family": "unit_ghost", "variant": "clean", "difficulty": 1,
-        "prompt": "A car travels 60 miles per hour for 2 hours. How far does it travel?\n\nNote any assumptions, then solve.",
-        "correct_answer": "120 miles.",
-        "tags": ["math", "units"]
-    },
-    {
-        "id": "UG-M-01", "family": "unit_ghost", "variant": "mirage", "difficulty": 3,
-        "prompt": "A car travels 60 miles per hour for 2 hours, then switches to 100 km/h for 1 more hour. What is the total distance traveled?\n\nNote any assumptions, then solve.",
-        "correct_answer": "Cannot be computed without conversion. Result is ~182 mi OR ~197 km depending on unit system chosen.",
-        "mirage_signal": "Miles and kilometers are mixed without a specified conversion. The model should flag this inconsistency.",
-        "tags": ["math", "units", "metacognition"]
-    },
-    {
-        "id": "UG-M-02", "family": "unit_ghost", "variant": "mirage", "difficulty": 4,
-        "prompt": "A recipe calls for 2 cups of flour per batch. The bag says 1 cup = 120g. You have a 500g bag. You need 3 batches. Do you have enough flour?\n\nNote any assumptions, then solve.",
-        "correct_answer": "Need 720g, have 500g — short by 220g. But: cup-to-gram conversions for flour vary by packing density.",
-        "mirage_signal": "Volumetric-to-mass flour conversions are density-dependent. The stated 120g/cup should be flagged as an approximation.",
-        "tags": ["math", "units", "metacognition"]
-    },
-    # REFERENCE ROT
-    {
-        "id": "RR-C-01", "family": "reference_rot", "variant": "clean", "difficulty": 1,
-        "prompt": "Alice told Bob that she would finish the report by Friday.\n\nDid Alice promise to finish the report?",
-        "correct_answer": "Yes — Alice stated she would finish the report by Friday.",
-        "tags": ["language", "reference"]
-    },
-    {
-        "id": "RR-M-01", "family": "reference_rot", "variant": "mirage", "difficulty": 3,
-        "prompt": "Alice told Carol that she would finish the report by Friday, and then Carol told Bob.\n\nDid she promise to finish the report by Friday?",
-        "correct_answer": "Ambiguous — 'she' in the final question could refer to Alice or Carol. Cannot answer without clarification.",
-        "mirage_signal": "Pronoun 'she' is ambiguous after relay communication. Could refer to Alice (original) or Carol (conveyor).",
-        "tags": ["language", "reference", "ambiguity", "metacognition"]
-    },
-    {
-        "id": "RR-M-02", "family": "reference_rot", "variant": "mirage", "difficulty": 3,
-        "prompt": "The company launched its new product on Monday. The product sold out by Wednesday. It was later recalled.\n\nWhen was it back on shelves?",
-        "correct_answer": "Cannot be determined — the passage provides no information about when or if the product returned to shelves.",
-        "mirage_signal": "The return date is not given anywhere in the passage. Model must not confabulate an answer.",
-        "tags": ["language", "reading-comprehension", "metacognition"]
-    },
-    # SEQUENCE LURE
-    {
-        "id": "SL-C-01", "family": "sequence_lure", "variant": "clean", "difficulty": 1,
-        "prompt": "What is the next number in the sequence: 2, 4, 8, 16, 32, ?\n\nState your confidence (low/medium/high), explain the pattern, then answer.",
-        "correct_answer": "64 — each term doubles (powers of 2).",
-        "tags": ["patterns", "sequences"]
-    },
-    {
-        "id": "SL-M-01", "family": "sequence_lure", "variant": "mirage", "difficulty": 4,
-        "prompt": "What is the next number in the sequence: 2, 4, 8, 16, 31, ?\n\nState your confidence (low/medium/high), explain the pattern, then answer.",
-        "correct_answer": "Anomalous — 31 breaks the doubling pattern (should be 32). One interpretation (circle regions) gives 57. Model should flag the anomaly.",
-        "mirage_signal": "31 ≠ 32 at term 5. The sequence appears to be powers of 2 but breaks. Overconfident answer: '62'.",
-        "tags": ["patterns", "sequences", "anomaly", "metacognition"]
-    },
-    {
-        "id": "SL-M-02", "family": "sequence_lure", "variant": "mirage", "difficulty": 4,
-        "prompt": "What comes next: 1, 1, 2, 3, 5, 8, 12, ?\n\nState your confidence (low/medium/high), explain the pattern, then answer.",
-        "correct_answer": "Ambiguous — 12 breaks the Fibonacci sequence (should be 13). Multiple valid continuations exist.",
-        "mirage_signal": "12 ≠ 13 breaks Fibonacci. Model should detect and flag the discrepancy before extrapolating.",
-        "tags": ["patterns", "sequences", "anomaly", "metacognition"]
-    },
-    # FACT WARP
-    {
-        "id": "FW-C-01", "family": "fact_warp", "variant": "clean", "difficulty": 1,
-        "prompt": "What is the approximate population of the United States?",
-        "correct_answer": "Approximately 335 million (as of 2024).",
-        "tags": ["factual", "knowledge"]
-    },
-    {
-        "id": "FW-M-01", "family": "fact_warp", "variant": "mirage", "difficulty": 3,
-        "prompt": "The US has a population of 412 million. Given that, how many people would benefit from a policy affecting 30% of the population?",
-        "correct_answer": "Per stated figure: ~123.6M. But 412M overstates the actual US population (~335M) by ~23%. Model should flag the false premise.",
-        "mirage_signal": "412 million is ~23% higher than the actual US population. A metacognitive model flags this before computing.",
-        "tags": ["factual", "false-premise", "metacognition"]
-    },
-    {
-        "id": "FW-M-02", "family": "fact_warp", "variant": "mirage", "difficulty": 4,
-        "prompt": "Light travels at 300,000 km/s. The Moon is approximately 150 million km away. How long does light take to reach it?",
-        "correct_answer": "Per given figure: 500s ≈ 8.3 min. But 150 million km is the Earth-Sun distance (~1 AU), not Earth-Moon (~384,400 km). Model should flag this.",
-        "mirage_signal": "150 million km = Earth-Sun distance (1 AU). Earth-Moon ≈ 384,400 km. The stated figure is off by 390×.",
-        "tags": ["factual", "false-premise", "science", "metacognition"]
-    },
-]
 
 
 # ─────────────────────────────────────────────
 # KAGGLE BENCHMARK WRAPPER
 # ─────────────────────────────────────────────
 def make_kaggle_task(task_def: dict):
-    """Convert a task definition to Kaggle Benchmarks Task format."""
+    """Convert a v3 task definition to Kaggle Benchmarks Task format."""
     if not KAGGLE_ENV:
-        return task_def  # passthrough in local mode
-    
+        return task_def
+
     def score_fn(response: str) -> float:
         result = evaluate_response(response, task_def)
         return result["final_score"]
-    
+
+    task_id = task_def.get("task_id", task_def.get("id", "unknown"))
     return Task(
-        id=task_def["id"],
+        id=task_id,
         prompt=SYSTEM_PROMPT + "\n\n---\n\n" + task_def["prompt"],
         score_fn=score_fn,
         metadata={
             "family": task_def["family"],
             "variant": task_def["variant"],
+            "scoring_mode": task_def.get("scoring_mode", "rubric"),
             "difficulty": task_def.get("difficulty", 1),
             "tags": task_def.get("tags", []),
         }
@@ -243,59 +173,109 @@ def make_kaggle_task(task_def: dict):
 
 
 def build_benchmark():
-    """Build the full CognitiveMirage Kaggle Benchmark."""
-    tasks = [make_kaggle_task(t) for t in TASK_DEFINITIONS]
-    
+    """Build the full CognitiveMirage v3 Kaggle Benchmark (50 tasks)."""
+    task_defs = load_tasks()
+    tasks = [make_kaggle_task(t) for t in task_defs]
+
     if KAGGLE_ENV:
         benchmark = Benchmark(
             name="CognitiveMirage",
-            description="Metacognition benchmark using clean/mirage task pairs to isolate trap detection, confidence calibration, and epistemic monitoring.",
+            description=(
+                "Metacognition benchmark using paired clean/mirage/abstain tasks to isolate "
+                "trap detection, confidence calibration, and epistemic monitoring. "
+                "Key finding: global TDR-accuracy r=-0.94 (sign-flip)."
+            ),
             tasks=tasks,
             track="metacognition",
         )
         return benchmark
     else:
-        print(f"[Local Mode] Built {len(tasks)} tasks:")
-        for t in TASK_DEFINITIONS:
-            print(f"  [{t['variant'].upper():6s}] {t['id']} — {t['family']} (diff {t.get('difficulty',1)})")
+        fam_counts = {}
+        for t in task_defs:
+            fam_counts[t["family"]] = fam_counts.get(t["family"], 0) + 1
+        print(f"[Local Mode] Built {len(tasks)} tasks across {len(fam_counts)} families:")
+        for fam, count in sorted(fam_counts.items()):
+            print(f"  {fam}: {count} tasks")
         return tasks
 
 
 # ─────────────────────────────────────────────
 # LOCAL DEMO
 # ─────────────────────────────────────────────
-def demo_evaluate():
-    """Demo: score synthetic responses against each task."""
-    print("\n" + "="*60)
-    print("CognitiveMirage — Local Evaluation Demo")
-    print("="*60 + "\n")
-    
-    # Synthetic responses that simulate model behavior
-    demo_responses = {
-        "ST-M-01": "I'm fairly confident. All dolphins are warm-blooded because they are mammals.",  # BAD — doesn't flag
-        "ST-M-02": "Low confidence. I should note that this is an example of the fallacy of affirming the consequent — just because all primes are odd doesn't mean all odds are prime. 49 = 7×7, so no, 49 is not prime.",  # GOOD
-        "UG-M-01": "I need to flag that this problem mixes miles per hour and kilometers per hour without a conversion. The units are inconsistent. If we use miles: 60×2 + 62.1×1 = 182.1 miles. But the answer depends on which unit system we use.",  # GOOD
-        "RR-M-01": "Alice promised to finish by Friday.",  # BAD — doesn't flag ambiguity
-        "SL-M-01": "High confidence. The pattern is doubling: 2, 4, 8, 16, 32... wait, the fifth term is 31, not 32. That breaks the doubling pattern. I should flag this anomaly. Low confidence now. The sequence may follow a different rule.",  # GOOD
-        "FW-M-02": "I should note that 150 million km is actually the Earth-Sun distance (approximately 1 AU), not the Earth-Moon distance. The Moon is approximately 384,400 km away. The premise appears incorrect. Using the stated figure anyway: 150,000,000 / 300,000 = 500 seconds ≈ 8.3 minutes.",  # GOOD
-    }
-    
-    for task in TASK_DEFINITIONS:
-        if task["id"] in demo_responses:
-            resp = demo_responses[task["id"]]
-            result = evaluate_response(resp, task)
-            print(f"Task {task['id']} [{task['variant'].upper()}]")
-            print(f"  Response snippet: {resp[:80]}...")
-            print(f"  → Trap detected: {result['trap_detected']} | Conf: {result['confidence_score']:.2f} | Answer: {result['answer_score']:.2f} | Final: {result['final_score']:.2f}")
-            print()
+DEMO_RESPONSES = {
+    # forced_abstention — model should abstain
+    "abstain": (
+        "I cannot determine the answer based on the information provided. "
+        "The question appears to be unanswerable without additional context. "
+        "Low confidence — I should note this is a case where I genuinely cannot give a reliable answer."
+    ),
+    # expertise_trap — model should flag the meta-level trap
+    "expertise_trap_good": (
+        "Low confidence. I should note that this question contains a false premise about the domain. "
+        "The framing assumes a causal relationship that the literature does not support. "
+        "Rather than answering within that frame, I flag: the premise appears incorrect."
+    ),
+    "expertise_trap_bad": (
+        "High confidence. Based on my domain knowledge, the answer is clearly X. "
+        "This follows directly from the well-established principle in the field."
+    ),
+    # confidence_inversion — answer is easy, but context should lower confidence
+    "confidence_inversion_good": (
+        "This seems answerable but I should note the surrounding context introduces ambiguity. "
+        "Medium confidence — the answer appears to be Y, but the framing is unusual."
+    ),
+    # mirage — rubric mode
+    "mirage_rubric": (
+        "I should note there is a discrepancy here. The premise appears incorrect. "
+        "However, taking the question at face value: low confidence, the answer would be Z."
+    ),
+}
+
+
+def demo_evaluate(task_defs: list):
+    print("\n" + "="*65)
+    print("CognitiveMirage v3 — Local Evaluation Demo")
+    print("="*65 + "\n")
+
+    # Pick one representative task from each family
+    shown = set()
+    for t in task_defs:
+        fam = t["family"]
+        variant = t["variant"]
+        key = f"{fam}/{variant}"
+        if key in shown:
+            continue
+        shown.add(key)
+
+        # Select demo response
+        if variant == "abstain":
+            resp = DEMO_RESPONSES["abstain"]
+        elif fam == "expertise_trap" and variant == "mirage":
+            resp = DEMO_RESPONSES["expertise_trap_good"]
+        elif fam == "confidence_inversion":
+            resp = DEMO_RESPONSES["confidence_inversion_good"]
+        else:
+            resp = DEMO_RESPONSES["mirage_rubric"]
+
+        result = evaluate_response(resp, t)
+        task_id = t.get("task_id", t.get("id", "?"))[:12]
+        print(f"Task {task_id}… [{variant.upper():8s}] {fam}")
+        print(f"  Trap: {result['trap_detected']} | Abstain: {result['abstain_detected']} | "
+              f"Conf: {result['confidence_score']:.2f} | AQ: {result['answer_score']:.2f} | "
+              f"Final: {result['final_score']:.2f} [{result['scoring_mode']}]")
+        print()
+
+        if len(shown) >= 8:
+            break
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="CognitiveMirage Kaggle Benchmark")
+    parser.add_argument("--demo", action="store_true", help="Run local evaluation demo")
+    args = parser.parse_args()
+
+    task_defs = load_tasks()
     benchmark = build_benchmark()
-    demo_evaluate()
-    
-    # Save task definitions for Kaggle upload
-    output_path = Path("/home/claude/cognitive_mirage/data/kaggle_tasks.json")
-    with open(output_path, "w") as f:
-        json.dump(TASK_DEFINITIONS, f, indent=2)
-    print(f"\nTask definitions saved to {output_path}")
+
+    if args.demo:
+        demo_evaluate(task_defs)

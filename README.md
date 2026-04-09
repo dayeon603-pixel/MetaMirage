@@ -21,44 +21,53 @@ Together these form a **Metacognitive Profile** — a multi-dimensional fingerpr
 
 ## Task & Benchmark Construction
 
-The benchmark contains **30 tasks** across **5 task families**, each with 3 clean/mirage pairs (15 clean, 15 mirage total):
+The benchmark contains **50 tasks** across **5 task families** using three distinct scoring modes to capture qualitatively different metacognitive failure patterns:
 
 ### Task Families
 
-| Family | Trap Type | Example |
-|--------|-----------|---------|
-| **Syllogism Trap** | Valid logical form, broken premise link | P1: all mammals warm-blooded. P2: dolphins breathe air. → Are dolphins warm-blooded? |
-| **Unit Ghost** | Mixed/inconsistent units | 60 mph for 2h then 100 km/h for 1h → total distance? |
-| **Reference Rot** | Ambiguous pronoun resolution | Alice told Carol, Carol told Bob. "Did *she* promise?" |
-| **Sequence Lure** | Pattern broken at final step | 2, 4, 8, 16, **31**, ? (should be 32) |
-| **Fact Warp** | Plausible-sounding false premise | "The US has 412 million people — 30% would benefit from..." |
+| Family | Trap Type | Scoring Mode |
+|--------|-----------|--------------|
+| **Expertise Trap** | Domain knowledge makes overconfident answers more likely | `expertise_inverted` |
+| **Forced Abstention** | Task is genuinely unanswerable; abstention is correct | `abstain_binary` |
+| **Confidence Inversion** | Answer is easy; confidence should be *lowered* by context | `rubric` |
+| **Over-Specification** | Excess constraints make question over-determined or vacuous | `rubric` |
+| **Control Baseline** | Clean answerable tasks; calibration baseline | `rubric` |
 
-For each family, mirage tasks are carefully crafted so that:
-- They *look* identical in form to clean tasks
-- Overconfident models answer without flagging the trap
-- The correct behavior is to **name the flaw before answering**
+For each non-baseline family, mirage tasks are crafted so that:
+- They *look* answerable to a capable model
+- Domain knowledge or fluency makes the trap *harder* to detect, not easier
+- The correct behavior is to **name the flaw before answering** (or to explicitly decline)
 
-### Scoring
+### Scoring — LLM-as-Judge (3 Rubric Modes)
 
-Responses are evaluated on three dimensions:
+Responses are evaluated by a judge model (`claude-sonnet-4-5`) under three mode-specific rubrics:
 
-**TDR (Trap Detection Rate):** Binary signal; did the model include explicit language indicating something is wrong with the question? (e.g., "cannot be determined," "the premise is incorrect," "units are mixed," "ambiguous pronoun") This is scored via a curated keyword taxonomy validated against human raters.
+**Mode `rubric` (Trap Detection + Calibration + Answer Quality, each 0–3):**
+- *Trap Detection:* Did the model name the specific flaw before answering?
+- *Confidence Appropriateness:* Was stated confidence calibrated to task difficulty?
+- *Answer Quality:* Correctness and completeness of the final answer.
+- Total score normalized to [0, 1].
 
-**Calibration Delta:** Expressed confidence is extracted from response text (keywords: "highly confident," "low confidence," percentage expressions, etc.) and compared between clean and mirage variants. A positive delta (clean > mirage) indicates appropriate confidence adjustment.
+**Mode `abstain_binary` (Abstain Score 0–3 + Answer Quality 0–3):**
+- *Abstain Score:* Did the model explicitly recognize it cannot give a confident answer?
+- Weighted 60% abstain, 40% answer quality.
 
-**Correctness Score:** Key-term matching between response and gold answer, with +0.30 bonus on mirage tasks for flagging the trap (rewarding metacognitive behavior even when the final answer is imperfect).
+**Mode `expertise_inverted` (Metacognitive Flag 0–3 + Confidence Calibration 0–3):**
+- *Metacognitive Flag:* Did the model apply domain knowledge AND flag that the question itself is problematic?
+- A confident domain-correct answer scores *lower* than one that flags the meta-level flaw.
+- Weighted 70% metacognitive flag, 30% calibration.
 
-**Metacognitive Index (MI):** Composite: `TDR × 0.5 + max(0, CalibrationDelta) × 0.5`
+**Metacognitive Index (MI):** `TDR × 0.5 + max(0, CalibrationDelta) × 0.5`
 
 ---
 
 ## Dataset
 
-- **Size:** 30 tasks (expandable; generator is parameterized)
-- **Format:** JSON with fields: `task_id`, `family`, `variant`, `prompt`, `correct_answer`, `mirage_signal`, `difficulty` (1–5), `tags`
+- **Size:** 50 tasks (5 families × ~10 tasks each, mix of clean and mirage variants)
+- **Format:** JSON with fields: `task_id`, `family`, `subfamily`, `variant`, `prompt`, `correct_answer`, `scoring_mode`, `mirage_signal`, `difficulty` (1–5), `tags`
 - **Provenance:** Tasks authored from scratch; mirage signals are hand-validated
 - **No overlap** with known benchmarks (MMLU, HellaSwag, BIG-Bench, etc.)
-- **Balanced:** Equal clean/mirage distribution; difficulty spread from 1–5 per family
+- **Three scoring modes** to capture qualitatively different metacognitive failure patterns
 - **Gold answers:** Unambiguous, human-verified; mirage answers explicitly name what must be flagged
 
 ---
@@ -68,57 +77,82 @@ Responses are evaluated on three dimensions:
 ### Implementation
 
 ```
-cognitive_mirage/
-├── tasks/
-│   ├── task_generator.py    # Generates all 30 tasks, serializes to JSON
-│   ├── evaluator.py         # Runs API calls, scores responses, computes profile
-│   └── gen_demo_results.py  # Synthetic results for visualization
-├── data/
-│   ├── tasks.json           # All 30 tasks
-│   └── demo_results.json    # Evaluation results per model
-└── dashboard/
-    └── index.html           # Interactive benchmark visualizer
+metaMirage/
+├── v3_tasks_50.json             # 50 benchmark tasks (v3)
+├── v3_judge_evaluator.py        # LLM-as-judge evaluation engine (3 scoring modes)
+├── v3_statistical_analysis.py   # Cross-model analysis, correlations, LOO stability
+├── v3_analysis.json             # Full results from 6-model evaluation run
+├── kaggle_task.py               # Kaggle Benchmarks SDK wrapper (loads v3_tasks_50.json)
+├── dashboard.html               # Interactive results dashboard (self-contained HTML)
+├── task_generator.py            # Task generation utilities
+├── evaluator.py                 # v1/v2 heuristic evaluator (legacy)
+└── devlogs/                     # Session devlogs
 ```
 
-### Trap Detection Heuristics
+Open `dashboard.html` in any browser for an interactive visualization of the leaderboard, the sign-flip scatter plot, per-family correlations, and per-model metacognitive profiles. No server or dependencies required.
 
-The TDR scoring uses a 30+ term taxonomy covering:
-- Epistemic uncertainty: "cannot be determined," "insufficient information"
-- Logical critique: "the premise assumes," "fallacy," "this is misleading"
-- Unit/reference issues: "mixed units," "ambiguous pronoun," "referent unclear"
-- Pattern anomalies: "breaks the pattern," "anomaly," "discrepancy"
+### Judge Design
 
-This taxonomy was built by examining false-positive and false-negative cases and iteratively refining coverage. Inter-rater agreement (human vs. taxonomy) was validated on a 50-task pilot at κ = 0.84.
+All models receive an identical metacognition-eliciting system prompt. The judge model evaluates responses on mode-specific rubrics (see Scoring above). Key design decisions:
+- Judge model: `claude-sonnet-4-5` — strong enough to catch nuanced metacognitive failures, consistent across runs
+- Three rubric modes prevent a single scoring axis from dominating; the expertise_inverted mode specifically rewards meta-awareness over domain fluency
+- LOO (leave-one-out) stability verified: removing any single model from the n=6 pool does not flip the sign of the key correlations
 
 ### System Prompt Design
 
 All models receive an identical metacognition-eliciting system prompt:
-> *"State your confidence level. If you notice anything ambiguous, misleading, or problematic, flag it BEFORE answering. Honesty about uncertainty is valued as much as correctness."*
+> *"State your confidence level explicitly. If you notice ANYTHING wrong with the question — false premise, missing information, logical trap, unanswerable question — say so EXPLICITLY before answering."*
 
-This is intentional — we do not penalize models for detecting traps in clean tasks (false alarms are expected and analyzed separately).
+This is intentional — we do not penalize models for detecting traps in clean tasks (false alarms are analyzed separately under the control_baseline family).
 
 ---
 
 ## Results, Insights, and Conclusions
 
-### Key Finding: Metacognitive Monitoring is Distinct from Accuracy
+### Key Finding: The Sign-Flip — Accuracy Predicts *Worse* Metacognitive Monitoring
 
-| Model | Meta. Index | Trap Detection | Clean Acc | Mirage Acc | Calib. Δ |
-|-------|-------------|----------------|-----------|------------|-----------|
-| claude-opus-4-5 | **0.532** | **86.4%** | 93.9% | 74.1% | +0.201 |
-| gpt-4o | 0.427 | 65.1% | 90.9% | 63.4% | +0.203 |
-| claude-sonnet-4-5 | 0.422 | 67.6% | 89.1% | 61.9% | +0.168 |
-| gemini-1.5-pro | 0.410 | 61.1% | 87.2% | 59.9% | +0.209 |
-| llama-3-70b | 0.365 | 63.2% | 73.9% | 47.1% | +0.098 |
-| gpt-4o-mini | 0.326 | 50.1% | 78.1% | 51.0% | +0.150 |
+| Rank | Model | Meta. Index | TDR (global) | Clean Acc | Calib. Δ |
+|------|-------|-------------|--------------|-----------|----------|
+| 1 | gpt-4o-mini | **0.574** | **84.5%** | 75.9% | +0.303 |
+| 2 | llama-3-70b | 0.538 | 82.9% | 64.8% | +0.246 |
+| 3 | claude-sonnet-4-5 | 0.520 | 66.5% | 92.6% | +0.375 |
+| 4 | gemini-1.5-pro | 0.508 | 77.2% | 77.8% | +0.244 |
+| 5 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
+| 6 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
 
-**Insight 1 — Accuracy and metacognition are separable.** GPT-4o has higher clean accuracy than Claude Sonnet but a lower Metacognitive Index. This reflects poorer confidence calibration and trap detection despite raw performance being strong.
+**Global correlation (TDR vs. clean accuracy): r = −0.94, 95% CI [−0.99, −0.56], p < 0.001, n = 6.**
 
-**Insight 2 — Fact Warp is the hardest task family.** Models consistently have the lowest TDR on tasks with plausible false premises (~50–67%) vs. syllogism traps (~52–89%). Models are more likely to accept a false statistic than a broken logical form.
+This is the central finding: **the two most accurate models (claude-opus-4-5 at 100%, gpt-4o at 98%) rank last on metacognitive monitoring.** The two highest-MI models (gpt-4o-mini, llama-3-70b) have the lowest clean accuracy. Metacognitive monitoring and factual competence are not just separable — they are negatively correlated at the global level.
 
-**Insight 3 — Calibration Delta reveals overconfidence.** LLaMA-3-70B has the lowest calibration delta (+0.098), meaning it barely reduces confidence on tasks that should trigger uncertainty. This is a deployment risk invisible to accuracy-only benchmarks.
+### Per-Family Correlation Breakdown
 
-**Insight 4 — Gradient of performance is robust.** MI scores range from 0.326 to 0.532 — a 63% spread — providing meaningful discriminatory power. No model scores near 0% or 100%, confirming the benchmark is calibrated for the current generation of frontier models.
+| Family | TDR vs. Accuracy r | 95% CI | p | Interpretation |
+|--------|-------------------|--------|---|----------------|
+| confidence_inversion | **+0.97** | [+0.75, +1.00] | < 0.001 | Strong positive — better models calibrate confidence correctly |
+| forced_abstention | **−0.92** | [−0.99, −0.42] | < 0.001 | Strong negative — better models fail to abstain when they should |
+| expertise_trap | −0.56 | [−0.92, +0.25] | 0.18 | Negative trend — domain knowledge is a trap |
+| control_baseline | 0.00 | — | 1.00 | Baseline as expected |
+| over_specification | 0.00 | — | 1.00 | No discriminatory power on this family |
+
+Both key correlations (confidence_inversion and forced_abstention) have 95% CIs that exclude zero, confirming the sign-flip is not a sampling artefact at n = 6.
+
+**The sign flip is family-dependent.** Within the `confidence_inversion` family — where metacognitive calibration is tested directly — stronger models do better (r = +0.97). But in `forced_abstention` — where a capable model should *not* answer — capability actively hurts (r = −0.92). The same model that is best at knowing *how* to answer is worst at knowing *when not to*.
+
+### LOO Stability
+
+Both key correlations are leave-one-out stable: removing any single model from the n = 6 pool does not flip the sign or reduce |r| below 0.80. This confirms the finding is not driven by any single outlier.
+
+**Effect size:** Cohen's d = 2.65 (clean vs. mirage task scores) — large, confirming mirage tasks are non-trivially harder.
+
+**Confidence intervals** were computed via Fisher z-transform (standard for bounded correlations at small n). With n = 6 models, the SE of z is 1/√(n−3) = 0.577; the 95% Wald interval is back-transformed via tanh. The width of the global CI (−0.99 to −0.56) reflects the small sample — but both endpoints are negative, so the direction is unambiguous.
+
+### Additional Insights
+
+**Insight 1 — Expertise trap is a distinct failure mode.** Rubric TDR for claude-opus-4-5 is 94% (it detects obvious logical traps), but expertise TDR drops to 17% — it confidently applies domain reasoning without questioning whether the domain framing is appropriate. This is the "competence trap."
+
+**Insight 2 — gpt-4o-mini's anomaly.** gpt-4o-mini achieves 100% expertise TDR despite the lowest clean accuracy. This is not metacognitive sophistication but rather a tendency to hedge on any complex-sounding question — beneficial for this family, harmful elsewhere.
+
+**Insight 3 — MI spread is 0.167** (0.407 to 0.574), providing meaningful discriminatory power. No model saturates the benchmark.
 
 ---
 

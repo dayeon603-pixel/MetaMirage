@@ -258,8 +258,8 @@ def compute_metacognitive_profile(results: list[EvalResult]) -> dict:
 
 
 def run_evaluation(
-    tasks_path: str = "/home/claude/cognitive_mirage/data/tasks.json",
-    output_path: str = "/home/claude/cognitive_mirage/results/eval_results.json",
+    tasks_path: str = "tasks.json",
+    output_path: str = "eval_results.json",
     model: str = "claude-opus-4-5",
     max_tasks: int = None
 ):
