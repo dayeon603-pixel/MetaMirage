@@ -140,7 +140,7 @@ Both key correlations (confidence_inversion and forced_abstention) have 95% CIs 
 
 ### LOO Stability
 
-Both key correlations are leave-one-out stable: removing any single model from the n = 6 pool does not flip the sign or reduce |r| below 0.80. This confirms the finding is not driven by any single outlier.
+Both key correlations are leave-one-out stable: removing any single model from the n = 6 pool does not flip the sign or reduce |r| below 0.93 (global LOO r range: [−0.97, −0.94]; forced_abstention LOO min |r| = 0.90; confidence_inversion LOO min |r| = 0.96). This confirms the finding is not driven by any single outlier.
 
 **Effect size:** Cohen's d = 2.65 (clean vs. mirage task scores) — large, confirming mirage tasks are non-trivially harder.
 
