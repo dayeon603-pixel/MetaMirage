@@ -345,6 +345,36 @@
     <svg id="profiles" width="100%" viewBox="0 0 900 160" style="display:block;"></svg>
   </div>
 
+  <!-- LOO Stability -->
+  <div class="section-title">Leave-One-Out Stability</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-title">
+        Global LOO r (TDR vs Accuracy)
+        <span class="r-badge neg">all negative</span>
+      </div>
+      <div id="loo-global"></div>
+      <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
+        Removing any single model from n=6 leaves the sign of r unchanged.<br>
+        Min |r| = 0.937, max |r| = 0.972 — no outlier drives the finding.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        Per-Family LOO r (key correlations)
+        <span class="r-badge">sign-stable</span>
+      </div>
+      <div id="loo-family"></div>
+      <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
+        forced_abstention min |r| = 0.895; confidence_inversion min |r| = 0.963.<br>
+        Both CIs exclude zero under every leave-one-out fold.
+      </div>
+    </div>
+
+  </div>
+
 </main>
 
 <script>
@@ -641,6 +671,78 @@ MODELS.forEach((m, i) => {
   });
 
   svg.innerHTML = html;
+})();
+
+// ── LOO Stability ─────────────────────────────────────────────
+(function buildLOO() {
+  // Global LOO: remove each model one at a time
+  const LOO_GLOBAL = {
+    label: 'Global TDR vs Accuracy',
+    values: [-0.9367, -0.9420, -0.9403, -0.9378, -0.9702, -0.9716],
+    color: '#ec4899',
+  };
+
+  const LOO_FAMILIES = [
+    { label: 'forced_abstention',    values: [-0.8951, -0.9356, -0.9356, -0.8951, -0.9129, -0.9800], color: '#ec4899' },
+    { label: 'confidence_inversion', values: [ 0.9682,  0.9682,  0.9631,  1.0000,  0.9631,  0.9631], color: '#6366f1' },
+    { label: 'expertise_trap',       values: [-0.3889, -0.6124, -0.5906, -0.5474, -0.6846, -0.6163], color: '#f59e0b' },
+  ];
+
+  // Render global LOO as dot plot
+  const globalEl = document.getElementById('loo-global');
+  const rMin = -1.0, rMax = -0.85;
+  const rToLeft = r => ((r - rMin) / (rMax - rMin) * 100).toFixed(1) + '%';
+
+  const globalHtml = LOO_GLOBAL.values.map((r, i) => {
+    const leftPct = ((r - rMin) / (rMax - rMin)) * 100;
+    const modelShort = ['mini', 'llama', 'sonnet', 'gemini', 'opus', 'gpt4o'][i];
+    return `
+      <div class="corr-row" style="margin-bottom:0.4rem;">
+        <div class="corr-label" style="width:4rem;font-size:0.73rem;">${modelShort}</div>
+        <div class="corr-bar-wrap">
+          <div class="corr-bar-bg"></div>
+          <div style="position:absolute;top:50%;transform:translateY(-50%);left:${leftPct.toFixed(1)}%;
+            width:8px;height:8px;border-radius:50%;background:${LOO_GLOBAL.color};margin-left:-4px;"></div>
+        </div>
+        <div class="corr-val" style="color:${LOO_GLOBAL.color};width:3.5rem;">${r.toFixed(4)}</div>
+      </div>`;
+  }).join('');
+
+  globalEl.innerHTML = globalHtml + `
+    <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-top:0.3rem;padding-left:4.5rem;">
+      <span>−1.00</span><span>−0.97</span><span>−0.94</span><span>−0.91</span><span>−0.88</span><span>−0.85</span>
+    </div>`;
+
+  // Render family LOO as a table
+  const familyEl = document.getElementById('loo-family');
+  const tableHtml = `
+    <table style="font-size:0.78rem;">
+      <thead><tr>
+        <th>LOO fold</th>
+        ${LOO_FAMILIES.map(f => `<th style="color:${f.color};">${f.label.replace('_', ' ')}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${LOO_GLOBAL.values.map((_, i) => {
+          const modelShort = ['−mini', '−llama', '−sonnet', '−gemini', '−opus', '−gpt4o'][i];
+          return `<tr>
+            <td class="num" style="color:var(--muted);">${modelShort}</td>
+            ${LOO_FAMILIES.map(f => {
+              const v = f.values[i];
+              const col = Math.abs(v) >= 0.90 ? f.color : '#94a3b8';
+              return `<td class="num" style="color:${col};">${v > 0 ? '+' : ''}${v.toFixed(4)}</td>`;
+            }).join('')}
+          </tr>`;
+        }).join('')}
+        <tr style="border-top:1px solid var(--border);">
+          <td style="color:var(--muted);font-size:0.72rem;">min |r|</td>
+          ${LOO_FAMILIES.map(f => {
+            const minAbs = Math.min(...f.values.map(Math.abs));
+            return `<td class="num" style="color:${f.color};font-weight:700;">${minAbs.toFixed(4)}</td>`;
+          }).join('')}
+        </tr>
+      </tbody>
+    </table>`;
+  familyEl.innerHTML = tableHtml;
 })();
 </script>
 
