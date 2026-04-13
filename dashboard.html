@@ -253,11 +253,11 @@
 <div class="finding-banner">
   <strong>Key Finding — The Sign-Flip:</strong>
   Global TDR–accuracy correlation
-  <span class="stat">r = −0.94</span> (95% CI [−0.99, −0.56], p &lt; 0.001, n = 6).
+  <span class="stat">r = −0.94</span> (95% CI [−0.99, −0.56], p = 0.005, n = 6).
   The two most accurate models (claude-opus-4-5 at 100%, gpt-4o at 98.2%) rank <em>last</em> on metacognitive monitoring.
-  Within <code>confidence_inversion</code>: <span class="stat">r = +0.89</span> (95% CI [+0.30, +0.99], p = 0.0001).
-  Within <code>forced_abstention</code>: <span class="stat">r = −0.89</span> (95% CI [−0.99, −0.28], p = 0.0001).
-  Within <code>expertise_trap</code>: <span class="stat">r = −0.86</span> (95% CI [−0.98, −0.15], p = 0.0008).
+  Within <code>confidence_inversion</code>: <span class="stat">r = +0.89</span> (95% CI [+0.30, +0.99], p = 0.016).
+  Within <code>forced_abstention</code>: <span class="stat">r = −0.89</span> (95% CI [−0.99, −0.28], p = 0.018).
+  Within <code>expertise_trap</code>: <span class="stat">r = −0.86</span> (95% CI [−0.98, −0.15], p = 0.029).
   Both CIs exclude zero. LOO-stable (min |r| = 0.937 across all n−1 folds). Cohen's d = 2.65.
 </div>
 
@@ -395,10 +395,10 @@ const MODELS = [
 ];
 
 const FAMILY_CORR = [
-  { name: 'confidence_inversion', r: 0.8940, p: '0.0001', ci: [0.300, 0.988] },
-  { name: 'forced_abstention',    r: -0.8893, p: '0.0001', ci: [-0.988, -0.279] },
-  { name: 'expertise_trap',       r: -0.8578, p: '0.0008', ci: [-0.984, -0.152] },
-  { name: 'over_specification',   r: 0.0753, p: '0.88',  ci: [-0.784, 0.836] },
+  { name: 'confidence_inversion', r: 0.8940, p: '0.016', ci: [0.300, 0.988] },
+  { name: 'forced_abstention',    r: -0.8893, p: '0.018', ci: [-0.988, -0.279] },
+  { name: 'expertise_trap',       r: -0.8578, p: '0.029', ci: [-0.984, -0.152] },
+  { name: 'over_specification',   r: 0.0753, p: '0.89',  ci: [-0.784, 0.836] },
   { name: 'control_baseline',     r: 0.0,    p: '1.00',  ci: null },
 ];
 

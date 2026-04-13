@@ -7,7 +7,7 @@
 
 ## Headline Finding
 
-**The two most accurate LLMs rank last on metacognitive monitoring.** Across 6 frontier models and 50 hand-crafted tasks, accuracy and self-awareness correlate at **r = −0.94** (95% CI [−0.99, −0.56], p < 0.001). The correlation is leave-one-out stable. Three of five task families independently reproduce the sign-flip. Capability and metacognition are not just separable — on this benchmark they are **actively opposed**.
+**The two most accurate LLMs rank last on metacognitive monitoring.** Across 6 frontier models and 50 hand-crafted tasks, accuracy and self-awareness correlate at **r = −0.94** (95% CI [−0.99, −0.56], p = 0.005). The correlation is leave-one-out stable. Three of five task families independently reproduce the sign-flip, each at p < 0.03 (Student's t on n − 2 df, Fisher-z CI). Capability and metacognition are not just separable — on this benchmark they are **actively opposed**.
 
 ## Why This Matters for AGI
 
@@ -149,7 +149,7 @@ This is intentional — we do not penalize models for detecting traps in clean t
 | 5 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
 | 6 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
 
-**Global correlation (TDR vs. clean accuracy): r = −0.94, 95% CI [−0.99, −0.56], p < 0.001, n = 6.**
+**Global correlation (TDR vs. clean accuracy): r = −0.94, 95% CI [−0.99, −0.56], p = 0.005, n = 6.**
 
 This is the central finding: **the two most accurate models (claude-opus-4-5 at 100%, gpt-4o at 98%) rank last on metacognitive monitoring.** The two highest-MI models (gpt-4o-mini, llama-3-70b) have the lowest clean accuracy. Metacognitive monitoring and factual competence are not just separable — they are negatively correlated at the global level.
 
@@ -159,10 +159,10 @@ Per-family TDR is correlated against **global** clean-answer accuracy (`aq_clean
 
 | Family | TDR vs. Accuracy r | 95% CI | p | Interpretation |
 |--------|-------------------|--------|---|----------------|
-| confidence_inversion | **+0.89** | [+0.30, +0.99] | 0.0001 | Strong positive — on direct calibration, capability helps |
-| expertise_trap | **−0.86** | [−0.98, −0.15] | 0.0008 | Strong negative — domain knowledge becomes a trap |
-| forced_abstention | **−0.89** | [−0.99, −0.28] | 0.0001 | Strong negative — capable models fail to abstain |
-| over_specification | +0.08 | [−0.78, +0.84] | 0.88 | Null — trap type detected uniformly across models |
+| confidence_inversion | **+0.89** | [+0.30, +0.99] | 0.016 | Strong positive — on direct calibration, capability helps |
+| expertise_trap | **−0.86** | [−0.98, −0.15] | 0.029 | Strong negative — domain knowledge becomes a trap |
+| forced_abstention | **−0.89** | [−0.99, −0.28] | 0.018 | Strong negative — capable models fail to abstain |
+| over_specification | +0.08 | [−0.78, +0.84] | 0.89 | Null — trap type detected uniformly across models |
 | control_baseline | n/a | — | — | Degenerate by design (no mirage variant; no TDR signal) |
 
 **Three independent families flip the sign.** Non-null CIs all exclude zero, and `expertise_trap` — borderline under the earlier methodology (r = −0.56, p = 0.18) — emerges as a headline result under the corrected, properly-scaled capability axis. `confidence_inversion` is the *only* family where capability helps; `forced_abstention` and `expertise_trap` show the opposite. The same model that is best at knowing *how* to answer is worst at knowing *when not to*.
