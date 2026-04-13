@@ -18,16 +18,9 @@ BACKUP   = Path(__file__).parent / "v3_analysis.json.bak"
 
 
 def pearson(xs, ys):
-    if len(xs) < 3: return 0.0, 1.0
-    mx = sum(xs)/len(xs); my = sum(ys)/len(ys)
-    num = sum((x-mx)*(y-my) for x,y in zip(xs,ys))
-    den = math.sqrt(sum((x-mx)**2 for x in xs) * sum((y-my)**2 for y in ys))
-    if den == 0: return 0.0, 1.0
-    r = num/den
-    n = len(xs)
-    t = r*math.sqrt(n-2)/math.sqrt(max(1e-9, 1-r**2))
-    p = 2*(1 - 0.5*(1+math.erf(abs(t)/math.sqrt(2))))
-    return round(r,4), round(p,4)
+    """Pearson r with two-sided p from Student's t on n-2 df (matches scipy)."""
+    from v3_statistical_analysis import pearson as _p
+    return _p(xs, ys)
 
 
 def fisher_ci(r, n, alpha=0.05):

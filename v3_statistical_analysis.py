@@ -17,17 +17,67 @@ def std(lst):
     m=mean(lst)
     return math.sqrt(sum((x-m)**2 for x in lst)/(len(lst)-1))
 def pearson(xs,ys):
+    """Pearson r with two-sided p-value from Student's t on n-2 df.
+    The normal-CDF approximation used previously badly understates p at
+    small n; the correct null distribution of r√(n-2)/√(1-r²) under the
+    no-correlation null is t with df = n-2 (Fisher 1915). scipy is the
+    canonical implementation; a stdlib fallback using the regularized
+    incomplete beta is provided for environments without scipy."""
     if len(xs)<3: return 0.0,1.0
     mx,my=mean(xs),mean(ys)
     num=sum((x-mx)*(y-my) for x,y in zip(xs,ys))
     den=math.sqrt(sum((x-mx)**2 for x in xs)*sum((y-my)**2 for y in ys))
     if den==0: return 0.0,1.0
     r=num/den
-    n=len(xs)
-    t=r*math.sqrt(n-2)/math.sqrt(max(1e-9,1-r**2))
-    p=2*(1-_ncdf(abs(t)))
-    return round(r,4),round(p,4)
-def _ncdf(z): return 0.5*(1+math.erf(z/math.sqrt(2)))
+    r=max(min(r,0.999999),-0.999999)
+    n=len(xs); df=n-2
+    t_stat=r*math.sqrt(df)/math.sqrt(1-r**2)
+    try:
+        from scipy.stats import t as _t
+        p=2*_t.sf(abs(t_stat),df)
+    except ImportError:
+        # two-sided p for t on df degrees of freedom via regularized incomplete beta
+        # p = I_{df/(df+t²)}(df/2, 1/2)
+        x=df/(df+t_stat*t_stat)
+        p=_betainc(df/2.0,0.5,x)
+    return round(r,4),round(float(p),4)
+
+def _betainc(a,b,x):
+    """Regularized incomplete beta function I_x(a,b) via continued fraction.
+    Sufficient precision for small-df significance testing."""
+    if x<=0: return 0.0
+    if x>=1: return 1.0
+    lbeta=math.lgamma(a)+math.lgamma(b)-math.lgamma(a+b)
+    front=math.exp(math.log(x)*a+math.log(1-x)*b-lbeta)/a
+    # Lentz continued fraction
+    fpmin=1e-30
+    c=1.0; d=0.0
+    f=1.0
+    for m in range(0,200):
+        m2=2*m
+        if m==0:
+            aa=1.0
+        elif m2 < 0:
+            aa=0.0
+        else:
+            aa=(m*(b-m)*x)/((a+m2-1)*(a+m2))
+        d=1.0+aa*d
+        if abs(d)<fpmin: d=fpmin
+        c=1.0+aa/c
+        if abs(c)<fpmin: c=fpmin
+        d=1.0/d
+        f*=d*c
+        aa=-((a+m)*(a+b+m)*x)/((a+m2)*(a+m2+1))
+        d=1.0+aa*d
+        if abs(d)<fpmin: d=fpmin
+        c=1.0+aa/c
+        if abs(c)<fpmin: c=fpmin
+        d=1.0/d
+        delta=d*c
+        f*=delta
+        if abs(delta-1.0)<1e-10:
+            break
+    return front*(f-1.0)
 def fisher_ci(r, n, alpha=0.05):
     """95% CI on Pearson r via Fisher z-transform. Returns [lo,hi]."""
     if n < 4 or r is None: return [None, None]

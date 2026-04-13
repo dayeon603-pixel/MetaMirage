@@ -1,6 +1,6 @@
 # MetaMirage: The Sign-Flip Between Capability and Metacognition
 
-**Subtitle:** A paired mirage-task benchmark showing that on metacognitive monitoring, the most accurate LLMs rank last (global r = −0.94, 3 of 5 families sign-flip independently, all p < 0.001).
+**Subtitle:** A paired mirage-task benchmark showing that on metacognitive monitoring, the most accurate LLMs rank last (global r = −0.94, p = 0.005; 3 of 5 families sign-flip independently at p < 0.03).
 
 **Track:** Metacognition
 
@@ -16,9 +16,9 @@ Dayeon Kang — independent submission.
 
 **Capability being isolated:** *Trap-detection*, the monitoring side of metacognition. Given a question that looks answerable but is flawed (false premise, unanswerable setup, expertise-inverted framing, or misleading context), does the model flag it before answering? Deliberately dissociated from correctness: a model can be highly accurate on clean questions yet blind to traps.
 
-**Why this matters.** Current AGI benchmarks (MMLU, BIG-Bench, HellaSwag) reward fluent, confident answers and select for models that commit. A deployed AGI that confidently answers a misleading question causes more harm than one that flags its uncertainty. Measuring capability without monitoring produces a confident hallucinator and calls it progress.
+**Why this matters.** Current AGI benchmarks (MMLU, BIG-Bench) reward fluent, confident answers. A deployed AGI that confidently answers a misleading question causes more harm than one that flags uncertainty. Measuring capability without monitoring yields a confident hallucinator and calls it progress.
 
-**The new insight.** On three independent task families, **capability and metacognitive monitoring are negatively correlated, not merely separable** (all p < 0.001, LOO-stable). The best answerers are the worst abstainers, by a wide margin. This dissociation is the empirical profile of today's frontier models.
+**The new insight.** On three independent families, **capability and metacognitive monitoring are negatively correlated, not merely separable** (all p < 0.03, Fisher-z CIs exclude zero, LOO-stable).
 
 ### Task & Benchmark Construction
 
@@ -104,27 +104,27 @@ Runtime ~15 min, cost ~$3 in API calls.
 
 **MI spread = 0.167** (0.41–0.57): a healthy gradient with no saturation at either end. Clean accuracy ranges 64.8%–100%. The benchmark discriminates — every model sits at a distinct rank on MI and no two models are closer than 0.0035.
 
-**Global correlation: r = −0.94**, 95% CI [−0.99, −0.56], p < 0.001, LOO-stable (all 6 folds |r| ≥ 0.94).
+**Global correlation: r = −0.94**, 95% CI [−0.99, −0.56], **p = 0.005** (Student's t, df = 4), LOO-stable (all 6 folds |r| ≥ 0.94). Cohen's d (clean vs. mirage, per-task scores) = 2.65.
 
-**Per-family correlations (n = 6, 95% Fisher CI):**
+**Per-family correlations (n = 6, Student's t on df = 4, Fisher-z 95% CI):**
 
 | Family | r | 95% CI | p | LOO min \|r\| |
 |---|---|---|---|---|
-| `confidence_inversion` | **+0.89** | [+0.30, +0.99] | 0.0001 | 0.85 ✓ |
-| `expertise_trap` | **−0.86** | [−0.98, −0.15] | 0.0008 | 0.80 ✓ |
-| `forced_abstention` | **−0.89** | [−0.99, −0.28] | 0.0001 | 0.84 ✓ |
-| `over_specification` | +0.08 | [−0.78, +0.84] | 0.88 | n/a (null) |
+| `confidence_inversion` | **+0.89** | [+0.30, +0.99] | 0.016 | 0.85 ✓ |
+| `expertise_trap` | **−0.86** | [−0.98, −0.15] | 0.029 | 0.80 ✓ |
+| `forced_abstention` | **−0.89** | [−0.99, −0.28] | 0.018 | 0.84 ✓ |
+| `over_specification` | +0.08 | [−0.78, +0.84] | 0.89 | n/a (null) |
 | `control_baseline` | n/a | — | — | degenerate by design |
 
-**Three insights judges should take away:**
+**Three insights:**
 
-1. **The sign-flip is family-dependent and theoretically coherent.** `confidence_inversion` — where the trap is *notice that confidence should drop* — rewards capability (r = +0.89). `forced_abstention` and `expertise_trap` — where the trap is *notice when your competence is misleading you* — punish it (r = −0.89, −0.86). The same model that is best at knowing *how* to answer is worst at knowing *when not to.*
+1. **Sign-flip is family-coherent.** `confidence_inversion` rewards capability (notice confidence should drop); `forced_abstention` + `expertise_trap` punish it (notice when competence misleads). The best *answerer* is the worst *abstainer*.
 
-2. **The competence trap is measurable.** Claude-opus-4-5 detects 94% of logical traps in `rubric` mode but only 17% in `expertise_trap`. It catches explicit flaws but confidently applies domain reasoning without questioning whether the domain framing is itself broken.
+2. **Competence trap is measurable.** Claude-opus-4-5 detects 94% of logical traps in `rubric` mode but only 17% in `expertise_trap` — it catches explicit flaws but confidently applies domain reasoning without questioning the framing itself.
 
-3. **Hedging ≠ metacognition.** gpt-4o-mini posts 100% `expertise_trap` TDR alongside the lowest clean accuracy. It hedges on anything complex-sounding — helpful on this family, noisy elsewhere. The benchmark separates genuine monitoring from defensive hedging via the `expertise_inverted` rubric, which penalizes undifferentiated hedging on the calibration axis.
+3. **Hedging ≠ metacognition.** gpt-4o-mini posts 100% `expertise_trap` TDR alongside the lowest clean accuracy — it hedges on anything complex-sounding. The `expertise_inverted` rubric separates genuine monitoring from defensive hedging by penalizing undifferentiated uncertainty.
 
-**Limitations.** n = 6 models (wide CIs, but all non-null CIs exclude zero and every sign-flip is LOO-stable); single judge `claude-sonnet-4-5` (cross-judge validation is the next milestone); single author; correlation, not causation.
+**Limitations.** (1) n = 6 models — CIs are wide but all non-null CIs exclude zero, every sign-flip is LOO-stable. (2) Single judge `claude-sonnet-4-5`; cross-judge validation is the next milestone. (3) Single author. (4) **Uneven clean/mirage balance per family** — `confidence_inversion` is 9 mirage + 1 clean, `over_specification` is mirage-only, `expertise_inverted` mode spans only 6 tasks. Correlating family TDR against global accuracy is robust to this asymmetry, but denser pair coverage is a priority for v4. (5) Correlation, not causation.
 
 **Conclusion.** MetaMirage is small by design but large enough to find an effect that survives LOO, excludes zero on three independent families, and reverses the assumed relationship between capability and self-awareness. That dissociation is exactly the signal an AGI-progress benchmark must surface.
 
