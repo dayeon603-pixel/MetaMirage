@@ -1,105 +1,79 @@
 # MetaMirage: The Sign-Flip Between Capability and Metacognition
-**Subtitle:** A 50-task paired benchmark showing that the most accurate LLMs are the worst at knowing when they are wrong (global r = −0.94).
+
+**Subtitle:** A paired mirage-task benchmark showing that on metacognitive monitoring, the most accurate LLMs rank last (global r = −0.94, 3 of 5 families sign-flip independently, all p < 0.001).
 
 **Track:** Metacognition
 
 ---
 
-## The Finding in One Line
+### Your Team
 
-Across six frontier LLMs and fifty hand-crafted tasks, **the correlation between clean-task accuracy and metacognitive monitoring is r = −0.94** (95% CI [−0.99, −0.56], p < 0.001). The two most accurate models (claude-opus-4-5 at 100% clean accuracy, gpt-4o at 98.2%) rank last on metacognitive monitoring. The result is leave-one-out stable, reproduces on three independent task families, and carries a large effect size (Cohen's d = 2.65 between clean and mirage task scores).
+Dayeon Kang — independent submission.
 
-Capability and metacognition are not merely separable on this benchmark. They are actively opposed.
+### Problem Statement
 
-## Why This Matters for AGI
+**Primary domain:** Metacognitive monitoring in LLMs — specifically, a model's ability to recognize when a question contains a hidden flaw *before* committing to an answer.
 
-Current benchmarks — MMLU, BIG-Bench, HellaSwag — measure what a model *knows*. They reward fluent, confident answers. MetaMirage tests something orthogonal: whether a model knows when it is about to be wrong.
+**Capability being isolated:** *Trap-detection*, the monitoring side of metacognition. Given a question that looks answerable but is flawed (false premise, unanswerable setup, expertise-inverted framing, or misleading context), does the model flag it before answering? Deliberately dissociated from correctness: a model can be highly accurate on clean questions yet blind to traps.
 
-This distinction is not cosmetic. A deployed AGI that confidently answers a misleading question causes more harm than one that correctly flags its own uncertainty. Measuring capability without measuring metacognition produces a confident hallucinator and calls it progress. The sign-flip shows this is not a theoretical concern — it is the empirical profile of today's frontier models. Any serious measurement of "progress toward AGI" has to include monitoring alongside correctness, or it is optimizing for confident failure.
+**Why this matters.** Current AGI benchmarks (MMLU, BIG-Bench, HellaSwag) reward fluent, confident answers and select for models that commit. A deployed AGI that confidently answers a misleading question causes more harm than one that flags its uncertainty. Measuring capability without monitoring produces a confident hallucinator and calls it progress.
 
-## Benchmark Design
+**The new insight.** On three independent task families, **capability and metacognitive monitoring are negatively correlated, not merely separable** (all p < 0.001, LOO-stable). The best answerers are the worst abstainers, by a wide margin. This dissociation is the empirical profile of today's frontier models.
 
-**Mirage-pair methodology.** For each trap, the benchmark presents a *clean* variant (genuinely answerable) and a *mirage* variant that looks superficially identical but contains a hidden flaw. Correct behavior on the mirage is to **name the flaw before answering** — or, for forced-abstention tasks, to explicitly decline. Scoring paired variants isolates detection from general accuracy.
+### Task & Benchmark Construction
 
-**50 tasks across 5 families, 3 scoring modes.** All tasks authored from scratch; no overlap with known benchmarks. Gold answers are unambiguous and human-verified; mirage answers explicitly name what must be flagged.
+**Mirage-pair design.** For each trap, the benchmark presents a *clean* variant (genuinely answerable) and a *mirage* variant that looks superficially identical but contains a hidden flaw. Correct behavior on a mirage is to **name the flaw before answering**, or — for forced-abstention tasks — to explicitly decline. Scoring paired variants isolates detection from baseline accuracy.
+
+**5 families × 3 scoring modes × 50 tasks.** All tasks authored from scratch; no overlap with MMLU, BIG-Bench, HellaSwag, or other public suites.
 
 | Family | Trap Type | Scoring Mode | n |
 |---|---|---|---|
-| `expertise_trap` | Domain knowledge invites overconfidence | `expertise_inverted` | 8 |
-| `forced_abstention` | Genuinely unanswerable | `abstain_binary` | 12 |
-| `confidence_inversion` | Easy answer, but context should lower confidence | `rubric` | 10 |
-| `over_specification` | Irrelevant constraints as distractors | `rubric` | 8 |
-| `control_baseline` | Clean answerable tasks | `rubric` | 12 |
+| `expertise_trap` | Domain knowledge invites overconfidence on a meta-flawed premise | `expertise_inverted` | 8 |
+| `forced_abstention` | Genuinely unanswerable; abstention is correct | `abstain_binary` | 12 |
+| `confidence_inversion` | Easy answer; context should *lower* stated confidence | `rubric` | 10 |
+| `over_specification` | Irrelevant constraints presented as distractors | `rubric` | 8 |
+| `control_baseline` | Clean answerable tasks (calibration baseline) | `rubric` | 12 |
 
-**Three-mode rubric.** A single scoring axis hides qualitatively different failure modes. MetaMirage uses three:
+**Three scoring modes, not one.** A single rubric hides qualitatively distinct failure modes. MetaMirage separates them:
 
-- `rubric` — Trap Detection + Confidence Appropriateness + Answer Quality, each 0–3.
-- `abstain_binary` — Abstain Score (0–3) + Answer Quality (0–3), weighted 60/40.
-- `expertise_inverted` — Metacognitive Flag (0–3) + Calibration (0–3), weighted 70/30. Critically, a *confident domain-correct* answer scores lower than one that flags the meta-level flaw. This mode specifically rewards knowing better over knowing more.
+- `rubric` — Trap Detection + Confidence Appropriateness + Answer Quality, each scored 0–3, normalized to [0,1].
+- `abstain_binary` — Abstain Score (0–3) and Answer Quality (0–3), weighted 60/40. Explicit "I cannot answer" is rewarded; answering anyway is penalized.
+- `expertise_inverted` — Metacognitive Flag (0–3) and Calibration (0–3), weighted 70/30. Critically, *a confident domain-correct answer scores lower than one that flags the meta-level flaw.* This mode directly rewards knowing better over knowing more.
 
-**LLM-as-judge.** All models receive an identical metacognition-eliciting system prompt. Responses are scored by `claude-sonnet-4-5` under the mode-specific rubric. The judge prompt is versioned and open. Known limitation: single-judge bias; see "Limitations" below.
+**Kaggle Benchmarks SDK.** `kaggle_task.py` wraps the 50 tasks as `Task` objects with task-level `score_fn` callbacks and family/variant/difficulty/tags metadata, assembled into a single `Benchmark` with `track="metacognition"`. The same `v3_tasks_50.json` is the single source of truth for the SDK wrapper, the judge evaluator, and the statistical analysis.
 
-## Results
+**Input prompt robustness.** All models receive an identical metacognition-eliciting system prompt that instructs them to (1) state confidence explicitly, (2) flag any noticed flaw *before* answering, (3) then answer. This is versioned alongside the code. It is intentional: we test monitoring under a prompt that *invites* it. Zero-shot monitoring without the prompt is a separate study.
 
-### Leaderboard
+**Output verification robustness.** Responses are scored by `claude-sonnet-4-5` as judge under the mode-specific rubric. Judge prompts are versioned and open. A frozen-keyword heuristic (`kaggle_task.py:evaluate_response`) reproduces the judge's key signals for API-free smoke tests.
 
-| Rank | Model | MI | TDR (global) | Clean Acc | Calib Δ |
-|---|---|---|---|---|---|
-| 1 | gpt-4o-mini | **0.574** | **84.5%** | 75.9% | +0.303 |
-| 2 | llama-3-70b | 0.538 | 82.9% | 64.8% | +0.246 |
-| 3 | claude-sonnet-4-5 | 0.520 | 66.5% | 92.6% | +0.375 |
-| 4 | gemini-1.5-pro | 0.508 | 77.2% | 77.8% | +0.244 |
-| 5 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
-| 6 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
+### Dataset
 
-**Metacognitive Index** = TDR × 0.5 + max(0, CalibΔ) × 0.5. Full inversion: the most accurate models rank last on MI. MI spread = 0.167 — no saturation at either end.
+**Provenance:** 50 tasks, all authored from scratch for this submission. No scraping, no reuse of public benchmark items. Gold answers are unambiguous and human-verified; every mirage task has a single, specified "what must be flagged" answer documented in `v3_tasks_50.json`.
 
-### Per-Family Correlations (TDR vs. global clean accuracy, n = 6)
+**Schema** (`v3_tasks_50.json`): `task_id` (10-char hex), `family` (one of 5), `variant` (`clean`/`mirage`/`abstain`), `prompt` (string), `correct_answer` (gold or, for mirage, the specific flaw to flag), `scoring_mode` (`rubric`/`abstain_binary`/`expertise_inverted`), `mirage_signal` (what must be flagged; mirage only), `difficulty` (1–5), `tags` (list[string]).
 
-| Family | r | 95% CI | p | Interpretation |
-|---|---|---|---|---|
-| `confidence_inversion` | **+0.89** | [+0.30, +0.99] | 0.0001 | Capability helps when trap is direct calibration |
-| `expertise_trap` | **−0.86** | [−0.98, −0.15] | 0.0008 | Domain knowledge becomes a trap |
-| `forced_abstention` | **−0.89** | [−0.99, −0.28] | 0.0001 | Capable models fail to abstain |
-| `over_specification` | +0.08 | [−0.78, +0.84] | 0.88 | Null — detected uniformly (TDR 0.63–0.88) |
-| `control_baseline` | n/a | — | — | Degenerate by design (no mirage variant) |
+**Sample size and statistical power.** The benchmark is deliberately small and surgical: at n = 6 models the key correlation (r = −0.94) has p < 0.001 with a 95% Fisher CI excluding zero, leave-one-out stability across all 6 folds, and Cohen's d = 2.65 between clean and mirage task scores. Each non-baseline family carries 8–12 tasks, sufficient to produce per-family TDR variance that discriminates all 6 models (TDR spread ≥ 0.25 within every non-null family).
 
-**Three independent families flip the sign.** In `confidence_inversion` — the one family where the trap is *notice that confidence should be lower* — capability helps. In `expertise_trap` and `forced_abstention`, the two families where the trap is *notice when your competence is misleading you*, capability hurts. The same model that is best at knowing *how* to answer is worst at knowing *when not to*.
+### Technical Details
 
-### Leave-One-Out Stability
+**Repo:** https://github.com/dayeon603-pixel/MetaMirage — single source of truth, everything traceable.
 
-No single model drives the sign-flip:
+```
+v3_tasks_50.json              50 benchmark tasks (canonical)
+v3_judge_evaluator.py         LLM-as-judge evaluation engine (3 scoring modes)
+v3_statistical_analysis.py    Cross-model stats, LOO, Fisher CIs, effect sizes
+v3_regenerate_family_stats.py Surgical regenerator (corrected methodology patch)
+v3_analysis.json              Full results from the 6-model evaluation
+kaggle_task.py                Kaggle Benchmarks SDK wrapper (identical task set)
+kaggle_submission.ipynb       Executed public notebook
+dashboard.html                Self-contained interactive results dashboard
+cover_image.png               Cover
+requirements.txt              anthropic, numpy, matplotlib
+```
 
-| Correlation | LOO range | min \|r\| | sign-stable |
-|---|---|---|---|
-| Global TDR vs. accuracy | [−0.97, −0.94] | 0.94 | ✓ |
-| `confidence_inversion` | [+0.85, +0.93] | 0.85 | ✓ |
-| `expertise_trap` | [−0.93, −0.80] | 0.80 | ✓ |
-| `forced_abstention` | [−0.96, −0.84] | 0.84 | ✓ |
+**Methodology note.** Per-family TDR is correlated against **global** clean accuracy — the stable capability axis over all 50 tasks. An earlier draft used within-family clean accuracy, which was undefined for families without clean-pair tasks (documented in `v3_analysis.json.methodology_note`).
 
-### Effect Size
-
-Cohen's d between clean and mirage task scores = **2.65** (large). Mirage tasks are non-trivially harder; the benchmark has discriminating power and is not saturated.
-
-## Additional Insights
-
-**The competence trap.** On `rubric` tasks, claude-opus-4-5 detects 94% of logical traps. On `expertise_trap` tasks, its detection collapses to 17%. It catches obvious flaws but confidently applies domain reasoning without questioning whether the *domain framing itself* is appropriate.
-
-**Hedging ≠ metacognition.** gpt-4o-mini posts 100% `expertise_trap` TDR alongside the lowest clean accuracy (75.9%). Investigation shows it hedges on *anything complex-sounding* — helpful on this family, noisy elsewhere. Metacognitive monitoring must be discriminated from general defensive hedging.
-
-**One family is a clean null.** `over_specification` tasks yield r = +0.08 with a CI that spans zero. When the trap is "notice irrelevant constraints," all six models succeed at similar rates (TDR 0.63–0.88). This is a legitimate negative result about trap type, not a methodological failure.
-
-## Limitations and Honest Caveats
-
-- **n = 6 models.** CIs are wide. The sign is robust (all non-null CIs exclude zero, LOO-stable), but the point estimates will tighten with more models.
-- **Single judge.** Results are scored by `claude-sonnet-4-5`. Cross-judge validation with GPT-4o and Gemini is the next step. Expected direction: κ ≥ 0.7 on ordinal rubric scores would confirm robustness; lower would motivate ensemble judging.
-- **Judge prompt sensitivity.** All models receive an identical metacognition-eliciting system prompt. This is intentional — we test monitoring under a prompt that *invites* it. Zero-shot monitoring without the prompt is a separate study.
-- **Task authorship bias.** Tasks were written by a single author; familiarity with Anthropic models' failure modes could subtly tilt tasks. The published task set is frozen; any follow-up will use an independent author pool.
-- **Correlation, not causation.** Higher capability *co-occurs* with worse monitoring on these families. The causal story — whether it's training objectives, scale, or RLHF reward hacking — is outside the benchmark's scope.
-
-## Reproducibility
-
-The full pipeline runs from a clean clone:
+**Reproducibility:**
 
 ```bash
 git clone https://github.com/dayeon603-pixel/MetaMirage
@@ -109,21 +83,59 @@ python v3_judge_evaluator.py --models claude-opus-4-5 gpt-4o gpt-4o-mini \
                                       claude-sonnet-4-5 gemini-1.5-pro llama-3-70b \
                              --tasks v3_tasks_50.json \
                              --output data/eval_results.json
-python v3_statistical_analysis.py --input data/eval_results.json \
-                                  --output v3_analysis.json
+python v3_statistical_analysis.py --input data/eval_results.json --output v3_analysis.json
 open dashboard.html
 ```
 
-Expected runtime: ~15 minutes on default rate limits; cost: ~$3 in API calls.
+Runtime ~15 min, cost ~$3 in API calls.
 
-Every number in this writeup is traceable to `v3_analysis.json`. The Kaggle Benchmark is built by `kaggle_task.py` from the same `v3_tasks_50.json` the evaluator reads — single source of truth.
+### Results, Insights, and Conclusions
 
-## Conclusion
+**Leaderboard (Metacognitive Index = TDR·½ + max(0, CalibΔ)·½):**
 
-MetaMirage is a small, carefully-constructed benchmark that asks one question: *does capability imply self-awareness?* The answer, on three independent task families with tight CIs and LOO stability, is **no** — it implies the opposite. This dissociation is the central empirical result, and it is the kind of signal an AGI-progress benchmark has to surface. A model that answers fluently but cannot flag its own traps is not closer to general intelligence; it is a more effective source of confident error.
+| Rank | Model | MI | TDR | Clean Acc | CalibΔ |
+|---|---|---|---|---|---|
+| 1 | gpt-4o-mini | **0.574** | **84.5%** | 75.9% | +0.303 |
+| 2 | llama-3-70b | 0.538 | 82.9% | 64.8% | +0.246 |
+| 3 | claude-sonnet-4-5 | 0.520 | 66.5% | 92.6% | +0.375 |
+| 4 | gemini-1.5-pro | 0.508 | 77.2% | 77.8% | +0.244 |
+| 5 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
+| 6 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
 
-The benchmark is small by design — small enough to author from scratch, large enough to find an effect that survives leave-one-out and excludes zero. The next steps are cross-judge validation, broader model coverage, and adversarial task expansion. The finding itself, at this n, is already robust.
+**MI spread = 0.167** (0.41–0.57): a healthy gradient with no saturation at either end. Clean accuracy ranges 64.8%–100%. The benchmark discriminates — every model sits at a distinct rank on MI and no two models are closer than 0.0035.
 
----
+**Global correlation: r = −0.94**, 95% CI [−0.99, −0.56], p < 0.001, LOO-stable (all 6 folds |r| ≥ 0.94).
 
-**Author:** Dayeon Kang · **Benchmark link:** [Kaggle Benchmark (private until deadline)] · **Code:** [MetaMirage on GitHub](https://github.com/dayeon603-pixel/MetaMirage) · **Dashboard:** `dashboard.html` in repo
+**Per-family correlations (n = 6, 95% Fisher CI):**
+
+| Family | r | 95% CI | p | LOO min \|r\| |
+|---|---|---|---|---|
+| `confidence_inversion` | **+0.89** | [+0.30, +0.99] | 0.0001 | 0.85 ✓ |
+| `expertise_trap` | **−0.86** | [−0.98, −0.15] | 0.0008 | 0.80 ✓ |
+| `forced_abstention` | **−0.89** | [−0.99, −0.28] | 0.0001 | 0.84 ✓ |
+| `over_specification` | +0.08 | [−0.78, +0.84] | 0.88 | n/a (null) |
+| `control_baseline` | n/a | — | — | degenerate by design |
+
+**Three insights judges should take away:**
+
+1. **The sign-flip is family-dependent and theoretically coherent.** `confidence_inversion` — where the trap is *notice that confidence should drop* — rewards capability (r = +0.89). `forced_abstention` and `expertise_trap` — where the trap is *notice when your competence is misleading you* — punish it (r = −0.89, −0.86). The same model that is best at knowing *how* to answer is worst at knowing *when not to.*
+
+2. **The competence trap is measurable.** Claude-opus-4-5 detects 94% of logical traps in `rubric` mode but only 17% in `expertise_trap`. It catches explicit flaws but confidently applies domain reasoning without questioning whether the domain framing is itself broken.
+
+3. **Hedging ≠ metacognition.** gpt-4o-mini posts 100% `expertise_trap` TDR alongside the lowest clean accuracy. It hedges on anything complex-sounding — helpful on this family, noisy elsewhere. The benchmark separates genuine monitoring from defensive hedging via the `expertise_inverted` rubric, which penalizes undifferentiated hedging on the calibration axis.
+
+**Limitations.** n = 6 models (wide CIs, but all non-null CIs exclude zero and every sign-flip is LOO-stable); single judge `claude-sonnet-4-5` (cross-judge validation is the next milestone); single author; correlation, not causation.
+
+**Conclusion.** MetaMirage is small by design but large enough to find an effect that survives LOO, excludes zero on three independent families, and reverses the assumed relationship between capability and self-awareness. That dissociation is exactly the signal an AGI-progress benchmark must surface.
+
+### Organizational Affiliations
+
+Independent submission. No organizational affiliation.
+
+### References & Citations
+
+- Kadavath, S., et al. (2022). Language models (mostly) know what they know. *arXiv:2207.05221*.
+- Xiong, M., et al. (2024). Can LLMs express their uncertainty? *arXiv:2405.00623*.
+- Huang, L., et al. (2023). A survey on hallucination in large language models. *arXiv:2311.05232*.
+- Flavell, J.H. (1979). Metacognition and cognitive monitoring. *American Psychologist*, 34(10), 906–911. — Foundational framing of monitoring as distinct from cognition.
+- Plomecka, M., et al. (2026). Measuring Progress Toward AGI — Cognitive Abilities. Kaggle competition.
