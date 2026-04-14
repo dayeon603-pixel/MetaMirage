@@ -183,7 +183,7 @@ def build_benchmark():
             description=(
                 "Metacognition benchmark using paired clean/mirage/abstain tasks to isolate "
                 "trap detection, confidence calibration, and epistemic monitoring. "
-                "Key finding: global TDR-accuracy r=-0.94 (sign-flip)."
+                "Key finding: global TDR-accuracy r=-0.84 (sign-flip; p=0.018; LOO-stable)."
             ),
             tasks=tasks,
             track="metacognition",
