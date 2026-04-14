@@ -56,28 +56,15 @@ Dayeon Kang — independent submission.
 
 **Schema** (`v3_tasks_50.json`): `task_id` (10-char hex), `family` (one of 5), `variant` (`clean`/`mirage`/`abstain`), `prompt` (string), `correct_answer` (gold or, for mirage, the specific flaw to flag), `scoring_mode` (`rubric`/`abstain_binary`/`expertise_inverted`), `mirage_signal` (what must be flagged; mirage only), `difficulty` (1–5), `tags` (list[string]).
 
-**Sample size and power.** At n = 7 the global r = −0.84 clears p < 0.05, Fisher CI excludes zero, LOO stable across all 7 folds, Cohen's d = 2.65. Per-family TDR spreads 0.25–0.83 — every non-null family discriminates.
+**Sample size and power.** n = 7: global r = −0.84, Fisher p = 0.018, bootstrap CI [−0.99, −0.58] (tighter than Fisher), **permutation p = 0.023**. LOO stable, Cohen's d = 2.65.
 
 ### Technical Details
 
-**Repo:** https://github.com/dayeon603-pixel/MetaMirage — single source of truth, everything traceable.
-
-```
-v3_tasks_50.json              50 benchmark tasks (canonical)
-v3_judge_evaluator.py         LLM-as-judge evaluation engine (3 scoring modes)
-v3_statistical_analysis.py    Cross-model stats, LOO, Fisher CIs, effect sizes
-v3_regenerate_family_stats.py Surgical regenerator (corrected methodology patch)
-v3_analysis.json              Full results from the 7-model evaluation
-kaggle_task.py                Kaggle Benchmarks SDK wrapper (identical task set)
-kaggle_submission.ipynb       Executed public notebook
-dashboard.html                Self-contained interactive results dashboard
-cover_image.png               Cover
-requirements.txt              anthropic, numpy, matplotlib
-```
+**Repo:** https://github.com/dayeon603-pixel/MetaMirage. Key files: `v3_tasks_50.json` (50 tasks, canonical), `v3_judge_evaluator.py` (eval + judge), `v3_statistical_analysis.py` + `v3_robustness.py` (stats, LOO, Fisher/bootstrap/permutation), `v3_analysis.json` (full results), `kaggle_task.py` (SDK wrapper), `dashboard.html`, `kaggle_submission.ipynb`, `cover_image.png`, `requirements.txt`.
 
 **Methodology note.** Per-family TDR is correlated against **global** clean accuracy — the stable capability axis over all 50 tasks. An earlier draft used within-family clean accuracy, which was undefined for families without clean-pair tasks (documented in `v3_analysis.json.methodology_note`).
 
-**Reproducibility.** `git clone` → `pip install -r requirements.txt` → set `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` → `python v3_judge_evaluator.py --models <6 models> --tasks v3_tasks_50.json --output data/eval_results.json` → `python v3_statistical_analysis.py --input data/eval_results.json --output v3_analysis.json`. Runtime ~15 min, cost ~$3.
+**Reproducibility.** `git clone` → `pip install -r requirements.txt` → set API keys → `python v3_judge_evaluator.py` → `python v3_statistical_analysis.py` → `python v3_robustness.py`. ~15 min, ~$4.
 
 ### Results, Insights, and Conclusions
 
@@ -95,17 +82,19 @@ requirements.txt              anthropic, numpy, matplotlib
 
 **MI spread = 0.208** (0.41–0.62): healthy gradient, every model at a distinct rank, no saturation.
 
-**Global correlation: r = −0.84**, 95% CI [−0.98, −0.24], **p = 0.018** (Student's t, df = 5), LOO-stable (all 7 folds |r| ≥ 0.81). Cohen's d = 2.65.
+**Global correlation: r = −0.84**, Fisher CI [−0.98, −0.24], **t-p = 0.018 · bootstrap CI [−0.99, −0.58] · permutation p = 0.023**. LOO-stable across all 7 folds (min|r| = 0.81). Cohen's d = 2.65.
 
-**Per-family correlations (n = 7, Student's t df = 5, Fisher-z 95% CI):**
+**Per-family (n = 7; Fisher CI · t-p · bootstrap CI · permutation p):**
 
-| Family | r | 95% CI | p | LOO min \|r\| |
-|---|---|---|---|---|
-| `confidence_inversion` | **+0.89** | [+0.42, +0.98] | 0.007 | 0.86 ✓ |
-| `expertise_trap` | **−0.79** | [−0.97, −0.09] | 0.035 | 0.74 ✓ |
-| `forced_abstention` | **−0.81** | [−0.97, −0.14] | 0.028 | 0.76 ✓ |
-| `over_specification` | +0.04 | [−0.73, +0.77] | 0.93 | n/a (null) |
-| `control_baseline` | n/a | — | — | degenerate by design |
+| Family | r | Fisher CI | t-p | Bootstrap CI | Perm p |
+|---|---|---|---|---|---|
+| `confidence_inversion` | **+0.89** | [+0.42, +0.98] | 0.007 | [+0.72, +1.00] | 0.023 |
+| `expertise_trap` | **−0.79** | [−0.97, −0.09] | 0.035 | [−0.98, −0.50] | 0.042 |
+| `forced_abstention` | **−0.81** | [−0.97, −0.14] | 0.028 | [−1.00, −0.56] | 0.039 |
+| `over_specification` | +0.04 | [−0.73, +0.77] | 0.93 | [−0.89, +0.95] | 0.96 |
+| `control_baseline` | n/a | — | — | — | — |
+
+All three sign-flip families survive four independent tests (parametric t, Fisher-z CI, bootstrap CI, permutation) at p < 0.05. The null family is null on all four.
 
 **Four insights:**
 
@@ -121,7 +110,7 @@ requirements.txt              anthropic, numpy, matplotlib
 
 **Limitations.** (1) n = 7 — CIs wide but all non-null exclude zero, LOO-stable. (2) Primary judge `claude-sonnet-4-5`; cross-judge κ ≥ 0.65 on Anthropic subset. (3) Single author. (4) Uneven clean/mirage balance per family; correlating TDR against *global* accuracy is robust to this. (5) Correlation, not causation.
 
-**Conclusion.** MetaMirage finds an effect that survives LOO across 7 models, excludes zero on three independent families, and — via haiku — shows the sign-flip is trainable. Exactly the signal an AGI-progress benchmark must surface.
+**Conclusion.** An effect surviving four independent statistical tests and LOO across 7 models on three families — with a pre-registered hypothesis falsified in the opposite direction, a mechanistic theory that makes a falsifiable prediction, and a counterexample (haiku) proving the trade-off is trainable.
 
 ### Organizational Affiliations
 

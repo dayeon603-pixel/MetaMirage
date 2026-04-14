@@ -559,5 +559,55 @@
       "max_r": 0.7192
     }
   },
-  "methodology_note": "Per-family TDR is correlated against GLOBAL aq_clean (the stable capability axis across all 50 tasks) rather than within-family clean_aq. This corrects a degenerate r=0 artifact in families that have no clean-pair tasks (over_specification, control_baseline). Global correlation and per-model profiles are unchanged. Model pool expanded to n=7: claude-haiku-4-5-20251001, claude-opus-4-5, claude-sonnet-4-5, gemini-1.5-pro, gpt-4o, gpt-4o-mini, llama-3-70b."
+  "methodology_note": "Per-family TDR is correlated against GLOBAL aq_clean (the stable capability axis across all 50 tasks) rather than within-family clean_aq. This corrects a degenerate r=0 artifact in families that have no clean-pair tasks (over_specification, control_baseline). Global correlation and per-model profiles are unchanged. Model pool expanded to n=7: claude-haiku-4-5-20251001, claude-opus-4-5, claude-sonnet-4-5, gemini-1.5-pro, gpt-4o, gpt-4o-mini, llama-3-70b.",
+  "robustness": {
+    "method_note": "Two non-parametric checks alongside the Fisher-z CI reported in the main analysis. Bootstrap: 10 000 percentile resamples with replacement; valid without the normality-of-Fisher-z assumption at small n. Permutation: 10 000 label shuffles; p = fraction of shuffles with |r| \u2265 |r_observed|.",
+    "global": {
+      "r": -0.841,
+      "bootstrap_ci95": [
+        -0.9909,
+        -0.582
+      ],
+      "bootstrap_n_valid_resamples": 10000,
+      "permutation_p_two_sided": 0.023,
+      "n_permutations": 10000
+    },
+    "per_family": {
+      "confidence_inversion": {
+        "r": 0.8911,
+        "bootstrap_ci95": [
+          0.722,
+          0.9952
+        ],
+        "permutation_p": 0.0227
+      },
+      "control_baseline": {
+        "note": "degenerate"
+      },
+      "expertise_trap": {
+        "r": -0.7892,
+        "bootstrap_ci95": [
+          -0.9788,
+          -0.4968
+        ],
+        "permutation_p": 0.0418
+      },
+      "forced_abstention": {
+        "r": -0.8071,
+        "bootstrap_ci95": [
+          -0.996,
+          -0.5603
+        ],
+        "permutation_p": 0.0391
+      },
+      "over_specification": {
+        "r": 0.0421,
+        "bootstrap_ci95": [
+          -0.8931,
+          0.946
+        ],
+        "permutation_p": 0.955
+      }
+    }
+  }
 }
