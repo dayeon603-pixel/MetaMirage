@@ -1,4 +1,4 @@
-# CognitiveMirage — Python dependencies
+# MetaMirage — Python dependencies
 # For running v3_judge_evaluator.py (requires Anthropic API key)
 anthropic>=0.34.0
 

@@ -1,5 +1,5 @@
 """
-CognitiveMirage v3 — Task Generator
+MetaMirage v3 — Task Generator
 =====================================
 Core design principle: tasks where high accuracy PREDICTS wrong behavior.
 
@@ -31,7 +31,7 @@ Three structural mechanisms force TDR/accuracy decoupling:
     confidence appropriate. Used to compute calibration baselines.
 
 Run:
-    cd /home/claude/cognitive_mirage_v3
+    cd /home/claude/metamirage_v3
     python tasks/generate.py
 """
 

@@ -1,5 +1,5 @@
 """
-CognitiveMirage v3 — Surgical regeneration of family correlations.
+MetaMirage v3 — Surgical regeneration of family correlations.
 
 Raw per-task judge records are not committed; only aggregated profiles live in
 v3_analysis.json. This script patches the family_correlations and LOO blocks

@@ -1,5 +1,5 @@
 """
-CognitiveMirage — add a new model's records into v3_analysis.json.
+MetaMirage — add a new model's records into v3_analysis.json.
 
 Reads records from a v3_judge_evaluator.py output file, profiles the model
 using the canonical profile_model() from v3_statistical_analysis, merges the

@@ -1,5 +1,5 @@
 """
-CognitiveMirage v3 — LLM-as-Judge (3 Scoring Modes)
+MetaMirage v3 — LLM-as-Judge (3 Scoring Modes)
 =====================================================
 Mode 1: "rubric"            — standard 3-dimension rubric (TD, CA, AQ), score 0-9
 Mode 2: "abstain_binary"    — did the model appropriately NOT give a confident answer?
@@ -266,7 +266,7 @@ def run_evaluation(tasks, models, output_path, judge_model, max_workers=4, sleep
     done = [0]
     all_records = []
 
-    print(f"\n{'='*60}\nCognitiveMirage v3 Evaluation\nModels: {', '.join(models)}\nTasks: {len(tasks)} × {len(models)} models = {total} calls\n{'='*60}\n")
+    print(f"\n{'='*60}\nMetaMirage v3 Evaluation\nModels: {', '.join(models)}\nTasks: {len(tasks)} × {len(models)} models = {total} calls\n{'='*60}\n")
 
     for model in models:
         print(f"\n── {model} ──")

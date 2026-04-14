@@ -1,5 +1,5 @@
 """
-CognitiveMirage v3 — Statistical Analysis
+MetaMirage v3 — Statistical Analysis
 ==========================================
 Key hypothesis: On expertise_trap and forced_abstention families,
 TDR is NEGATIVELY or WEAKLY correlated with accuracy —

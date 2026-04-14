@@ -1,5 +1,5 @@
 """
-CognitiveMirage Evaluation Engine
+MetaMirage Evaluation Engine
 ===================================
 Scores model responses on three metacognitive dimensions:
 
@@ -264,7 +264,7 @@ def run_evaluation(
     max_tasks: int = None
 ):
     print(f"\n{'='*60}")
-    print(f"CognitiveMirage Benchmark — Evaluation Run")
+    print(f"MetaMirage Benchmark — Evaluation Run")
     print(f"Model: {model}")
     print(f"{'='*60}\n")
     

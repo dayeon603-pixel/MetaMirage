@@ -1,5 +1,5 @@
 """
-CognitiveMirage Benchmark — Task Generator
+MetaMirage Benchmark — Task Generator
 ==========================================
 Track: Metacognition
 Insight: Does a model know it's about to be fooled BEFORE it answers?
@@ -389,7 +389,7 @@ def build_all_tasks() -> list[Task]:
 if __name__ == "__main__":
     tasks = build_all_tasks()
     output = [t.to_dict() for t in tasks]
-    with open("/home/claude/cognitive_mirage/data/tasks.json", "w") as f:
+    with open("/home/claude/metamirage/data/tasks.json", "w") as f:
         json.dump(output, f, indent=2)
     print(f"Generated {len(tasks)} tasks ({len([t for t in tasks if t.variant == 'clean'])} clean, {len([t for t in tasks if t.variant == 'mirage'])} mirage)")
     

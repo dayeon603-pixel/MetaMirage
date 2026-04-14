@@ -1,5 +1,5 @@
 """
-CognitiveMirage — Cross-Judge Validation (Anthropic-only subset).
+MetaMirage — Cross-Judge Validation (Anthropic-only subset).
 
 Generates raw model responses once for the two Claude models on all 50 tasks,
 then judges each response with BOTH claude-sonnet-4-5 and claude-opus-4-5.

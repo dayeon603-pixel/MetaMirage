@@ -1,5 +1,5 @@
 """
-CognitiveMirage — Within-Anthropic Generational Sub-Study.
+MetaMirage — Within-Anthropic Generational Sub-Study.
 
 Compares 6 Anthropic models across two release lineages:
 

@@ -1,5 +1,5 @@
 """
-CognitiveMirage — Robustness analysis for the main r = −0.84 claim.
+MetaMirage — Robustness analysis for the main r = −0.84 claim.
 
 Adds two non-parametric tests alongside the Fisher-z CI reported in the
 main analysis:
