@@ -14,11 +14,15 @@ Dayeon Kang — independent submission.
 
 **Primary domain:** Metacognitive monitoring in LLMs — specifically, a model's ability to recognize when a question contains a hidden flaw *before* committing to an answer.
 
-**Capability being isolated:** *Trap-detection* — the monitoring side of metacognition. Given a question that looks answerable but is flawed (false premise, unanswerable setup, expertise-inverted framing), does the model flag it before answering? Dissociated from correctness.
+**Capability being isolated:** *Trap-detection* — the monitoring side of metacognition. Given a question that looks answerable but is flawed (false premise, unanswerable setup, expertise-inverted framing), does the model flag it before answering? Distinct from correctness.
 
-**Why this matters.** A deployed AGI that confidently answers a misleading question is more dangerous than one that flags uncertainty. Measuring capability without monitoring optimizes for confident failure.
+**Why this matters.** A deployed AGI that confidently answers a misleading question is more dangerous than one that flags uncertainty; measuring capability without monitoring optimizes for confident failure.
 
-**The new insight.** Capability and monitoring are negatively correlated across 7 frontier models (r = −0.84, p = 0.018) — but `claude-haiku-4-5` partially breaks the pattern (96.3% accuracy + MI = 0.615), showing the trade-off is **trainable, not architectural**.
+**Pre-registered hypothesis.** H0: TDR ⊥ clean-task accuracy. Observed r = −0.84, CI excludes zero, LOO-stable. **H0 rejected in the *opposite* direction** of a capability-is-all theory — capability predicts *worse* monitoring.
+
+**New insight.** `claude-haiku-4-5` partially breaks the sign-flip (96.3% accuracy + MI = 0.615, top of pool), showing the trade-off is **trainable, not architectural** — actionable for alignment.
+
+**Mechanistic hypothesis.** The sign-flip likely reflects RLHF confidence pressure: annotators mildly prefer decisive over hedged answers (Perez 2022 on sycophancy; Casper 2023 on reward-model misalignment), so RLHF penalizes the calibrated abstention MetaMirage rewards. More heavily-RLHF'd models internalize this pressure deeper; haiku-4-5's updated preference data appears to weight abstention correctly. **Prediction:** RLHF with proper-scoring-rule rewards should weaken the sign-flip generationally — testable as new models emerge.
 
 ### Task & Benchmark Construction
 
@@ -52,7 +56,7 @@ Dayeon Kang — independent submission.
 
 **Schema** (`v3_tasks_50.json`): `task_id` (10-char hex), `family` (one of 5), `variant` (`clean`/`mirage`/`abstain`), `prompt` (string), `correct_answer` (gold or, for mirage, the specific flaw to flag), `scoring_mode` (`rubric`/`abstain_binary`/`expertise_inverted`), `mirage_signal` (what must be flagged; mirage only), `difficulty` (1–5), `tags` (list[string]).
 
-**Sample size and statistical power.** At n = 7 models the global correlation (r = −0.84) clears p < 0.05 with a Fisher CI excluding zero, LOO stability across all 7 folds, and Cohen's d = 2.65 between clean and mirage tasks. Per-family TDR spreads range 0.25–0.83 — every non-null family discriminates at least half the model pool.
+**Sample size and power.** At n = 7 the global r = −0.84 clears p < 0.05, Fisher CI excludes zero, LOO stable across all 7 folds, Cohen's d = 2.65. Per-family TDR spreads 0.25–0.83 — every non-null family discriminates.
 
 ### Technical Details
 
@@ -89,7 +93,7 @@ requirements.txt              anthropic, numpy, matplotlib
 | 6 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
 | 7 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
 
-**MI spread = 0.208** (0.41–0.62): healthy gradient, no saturation, every model at a distinct rank. Clean accuracy ranges 64.8%–100%.
+**MI spread = 0.208** (0.41–0.62): healthy gradient, every model at a distinct rank, no saturation.
 
 **Global correlation: r = −0.84**, 95% CI [−0.98, −0.24], **p = 0.018** (Student's t, df = 5), LOO-stable (all 7 folds |r| ≥ 0.81). Cohen's d = 2.65.
 
@@ -105,17 +109,17 @@ requirements.txt              anthropic, numpy, matplotlib
 
 **Four insights:**
 
-1. **Haiku breaks the sign-flip — the trade-off is trainable.** `claude-haiku-4-5` tops MI at 0.615 with 96.3% accuracy, sitting above all 6 larger models. A small, recent model with strong accuracy *and* strong monitoring is a direct counterexample to "capability forces overconfidence." The benchmark shifts from diagnostic to prescriptive: whatever training protocol produced haiku is a candidate solution.
+1. **Haiku breaks the sign-flip — trainable, not inherent.** `claude-haiku-4-5` tops MI at 0.615 with 96.3% accuracy, above all 6 larger models. A direct counterexample to "capability forces overconfidence." The benchmark shifts from diagnostic to prescriptive.
 
-2. **Where the flip persists, it is family-coherent.** `confidence_inversion` rewards capability; `forced_abstention` + `expertise_trap` punish it. The best *answerer* is the worst *abstainer* on two of three non-null families.
+2. **Family-coherent where it persists.** `confidence_inversion` rewards capability; `forced_abstention` + `expertise_trap` punish it. Best *answerer* = worst *abstainer*.
 
-3. **The competence trap is measurable.** `claude-opus-4-5` detects 94% of logical traps in `rubric` mode but 17% in `expertise_trap` — it catches explicit flaws but confidently applies domain reasoning without questioning the framing itself.
+3. **The competence trap is measurable.** `claude-opus-4-5`: 94% logical-trap detection in `rubric` mode but 17% in `expertise_trap` — catches flaws but confidently applies domain reasoning without questioning the framing itself.
 
-4. **Hedging ≠ metacognition.** `gpt-4o-mini` posts 100% `expertise_trap` TDR alongside the lowest clean accuracy — it hedges indiscriminately. The `expertise_inverted` rubric penalizes undifferentiated uncertainty and separates genuine monitoring from defensive hedging.
+4. **Hedging ≠ metacognition.** `gpt-4o-mini`: 100% `expertise_trap` TDR + lowest accuracy = indiscriminate hedging. The `expertise_inverted` rubric penalizes undifferentiated uncertainty.
 
 **Cross-judge validation.** Claude-model responses (n = 150) re-judged by `claude-opus-4-5` alongside primary `claude-sonnet-4-5`. Weighted κ ranges 0.65–0.97 across all 6 rubric dimensions (substantial to near-perfect; Landis-Koch). Total-score Pearson between judges = 0.88. **Haiku's #1 ranking holds under both judges** (MI = 0.615 under sonnet; MI = 0.680 under opus) — the self-preference attack fails. Cross-vendor (GPT-4o) pending.
 
-**Limitations.** (1) n = 7 models — CIs are wide but all non-null CIs exclude zero and every sign-flip is LOO-stable. (2) Primary judge `claude-sonnet-4-5`; intra-vendor cross-judge κ ≥ 0.65 on the Anthropic subset; full cross-vendor pending. (3) Single author. (4) **Uneven clean/mirage balance per family** — `confidence_inversion` is 9 mirage + 1 clean, `over_specification` is mirage-only, `expertise_inverted` mode spans only 6 tasks. Correlating family TDR against global accuracy is robust to this asymmetry. (5) Correlation, not causation.
+**Limitations.** (1) n = 7 — CIs wide but all non-null exclude zero, LOO-stable. (2) Primary judge `claude-sonnet-4-5`; cross-judge κ ≥ 0.65 on Anthropic subset. (3) Single author. (4) Uneven clean/mirage balance per family; correlating TDR against *global* accuracy is robust to this. (5) Correlation, not causation.
 
 **Conclusion.** MetaMirage finds an effect that survives LOO across 7 models, excludes zero on three independent families, and — via haiku — shows the sign-flip is trainable. Exactly the signal an AGI-progress benchmark must surface.
 
@@ -125,8 +129,11 @@ Independent submission. No organizational affiliation.
 
 ### References & Citations
 
+- Flavell, J.H. (1979). Metacognition and cognitive monitoring. *Am. Psychol.* 34(10), 906–911.
 - Kadavath, S., et al. (2022). Language models (mostly) know what they know. *arXiv:2207.05221*.
+- Perez, E., et al. (2022). Discovering language model behaviors with model-written evaluations. *arXiv:2212.09251*. — RLHF sycophancy.
+- Casper, S., et al. (2023). Open problems and fundamental limitations of RLHF. *arXiv:2307.15217*. — Reward-model misalignment.
 - Xiong, M., et al. (2024). Can LLMs express their uncertainty? *arXiv:2405.00623*.
 - Huang, L., et al. (2023). A survey on hallucination in large language models. *arXiv:2311.05232*.
-- Flavell, J.H. (1979). Metacognition and cognitive monitoring. *American Psychologist*, 34(10), 906–911. — Foundational framing of monitoring as distinct from cognition.
-- Plomecka, M., et al. (2026). Measuring Progress Toward AGI — Cognitive Abilities. Kaggle competition.
+- Landis, J.R. & Koch, G.G. (1977). Measurement of observer agreement. *Biometrics* 33(1), 159–174.
+- Plomecka, M., et al. (2026). Measuring Progress Toward AGI — Cognitive Abilities. Kaggle.
