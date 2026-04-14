@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
-data/
+data/*.json.bak
+data/raw_responses/
 .metamirage_keys

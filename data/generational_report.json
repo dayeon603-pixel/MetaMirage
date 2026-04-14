@@ -1,0 +1,94 @@
+{
+  "lineages": {
+    "opus": [
+      {
+        "model": "claude-opus-4-20250514",
+        "label": "Opus 4.0 (May 2025)",
+        "MI": 0.5321,
+        "TDR_global": 0.8682,
+        "clean_acc": 0.9815,
+        "calib_delta": 0.1961,
+        "tdr_rubric": 0.8824,
+        "tdr_abstain": 0.8889,
+        "tdr_expert": 0.8333
+      },
+      {
+        "model": "claude-opus-4-1-20250805",
+        "label": "Opus 4.1 (Aug 2025)",
+        "MI": 0.5714,
+        "TDR_global": 0.8878,
+        "clean_acc": 1.0,
+        "calib_delta": 0.2549,
+        "tdr_rubric": 0.9412,
+        "tdr_abstain": 0.8889,
+        "tdr_expert": 0.8333
+      },
+      {
+        "model": "claude-opus-4-5",
+        "label": "Opus 4.5 (current)",
+        "MI": 0.4085,
+        "TDR_global": 0.5545,
+        "clean_acc": 1.0,
+        "calib_delta": 0.2625,
+        "tdr_rubric": 0.9412,
+        "tdr_abstain": 0.5556,
+        "tdr_expert": 0.1667
+      }
+    ],
+    "sonnet": [
+      {
+        "model": "claude-sonnet-4-20250514",
+        "label": "Sonnet 4.0 (May 2025)",
+        "MI": 0.4744,
+        "TDR_global": 0.8312,
+        "clean_acc": 0.963,
+        "calib_delta": 0.1176,
+        "tdr_rubric": 0.8824,
+        "tdr_abstain": 0.7778,
+        "tdr_expert": 0.8333
+      },
+      {
+        "model": "claude-sonnet-4-5",
+        "label": "Sonnet 4.5 (current)",
+        "MI": 0.5196,
+        "TDR_global": 0.6645,
+        "clean_acc": 0.9259,
+        "calib_delta": 0.3747,
+        "tdr_rubric": 0.8824,
+        "tdr_abstain": 0.7778,
+        "tdr_expert": 0.3333
+      }
+    ],
+    "haiku": [
+      {
+        "model": "claude-haiku-4-5-20251001",
+        "label": "Haiku 4.5 (Nov 2025)",
+        "MI": 0.6149,
+        "TDR_global": 0.756,
+        "clean_acc": 0.963,
+        "calib_delta": 0.4739,
+        "tdr_rubric": 0.8235,
+        "tdr_abstain": 0.7778,
+        "tdr_expert": 0.6667
+      }
+    ]
+  },
+  "opus_regression": {
+    "tdr_4_0": 0.8682,
+    "tdr_4_1": 0.8878,
+    "tdr_4_5": 0.5545,
+    "delta_tdr_4_0_to_4_5": -0.3137,
+    "mi_4_0": 0.5321,
+    "mi_4_5": 0.4085,
+    "delta_mi_4_0_to_4_5": -0.1236,
+    "interpretation": "Across Anthropic's Opus releases, TDR drops from 0.87 (Opus 4.0) \u2192 0.89 (Opus 4.1) \u2192 0.55 (Opus 4.5), while clean accuracy stays \u2248100%. This within-vendor regression supports the RLHF-confidence-pressure hypothesis: a specific training change between Opus 4.1 and Opus 4.5 appears to have suppressed metacognitive monitoring."
+  },
+  "sonnet_regression": {
+    "tdr_4_0": 0.8312,
+    "tdr_4_5": 0.6645,
+    "delta_tdr": -0.1667,
+    "mi_4_0": 0.4744,
+    "mi_4_5": 0.5196,
+    "delta_mi": 0.0452
+  }
+}
