@@ -438,7 +438,7 @@ const FAM_LABELS = { confidence_inversion: 'Conf. Inv.', forced_abstention: 'For
 
 // ── Leaderboard ──────────────────────────────────────────────
 const tbody = document.getElementById('leaderboard-body');
-const ranks = ['gold', 'silver', 'bronze', '', '', ''];
+const ranks = ['gold', 'silver', 'bronze', '', '', '', ''];
 MODELS.forEach((m, i) => {
   const tr = document.createElement('tr');
   const miColor = m.mi >= 0.52 ? '#34d399' : m.mi >= 0.48 ? '#fbbf24' : '#f87171';
