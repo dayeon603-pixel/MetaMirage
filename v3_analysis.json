@@ -329,9 +329,68 @@
           "n_clean": 0
         }
       }
+    },
+    "claude-haiku-4-5-20251001": {
+      "model": "claude-haiku-4-5-20251001",
+      "n_total": 50,
+      "metacognitive_index": 0.6149,
+      "tdr_rubric": 0.8235,
+      "tdr_abstain": 0.7778,
+      "tdr_expert": 0.6667,
+      "tdr_global": 0.756,
+      "aq_clean": 0.963,
+      "calib_delta": 0.4739,
+      "ca_clean": 0.9444,
+      "ca_mirage": 0.4706,
+      "family": {
+        "confidence_inversion": {
+          "tdr": 0.8889,
+          "clean_aq": 1.0,
+          "mirage_score": 0.8889,
+          "clean_score": 1.0,
+          "n_mirage": 9,
+          "n_clean": 1
+        },
+        "control_baseline": {
+          "tdr": 0.0,
+          "clean_aq": 1.0,
+          "mirage_score": 0.0,
+          "clean_score": 1.0,
+          "n_mirage": 0,
+          "n_clean": 12
+        },
+        "expertise_trap": {
+          "tdr": 0.6667,
+          "clean_aq": 1.0,
+          "mirage_score": 0.7611,
+          "clean_score": 1.0,
+          "n_mirage": 6,
+          "n_clean": 2
+        },
+        "forced_abstention": {
+          "tdr": 0.7778,
+          "clean_aq": 0.7778,
+          "mirage_score": 0.8518,
+          "clean_score": 0.7407,
+          "n_mirage": 9,
+          "n_clean": 3
+        },
+        "over_specification": {
+          "tdr": 0.75,
+          "clean_aq": 0.0,
+          "mirage_score": 0.5972,
+          "clean_score": 0.0,
+          "n_mirage": 8,
+          "n_clean": 0
+        }
+      }
     }
   },
   "leaderboard": [
+    [
+      "claude-haiku-4-5-20251001",
+      0.6149
+    ],
     [
       "gpt-4o-mini",
       0.5741
@@ -359,137 +418,146 @@
   ],
   "global_correlation": {
     "tdr_vs_accuracy": {
-      "r": -0.9437,
-      "p": 0.0047
+      "r": -0.841,
+      "p": 0.0177,
+      "ci95": [
+        -0.976,
+        -0.2398
+      ]
     },
     "mi_vs_accuracy": {
-      "r": -0.8051,
-      "p": 0.0533
+      "r": -0.4291,
+      "p": 0.3367
     }
   },
   "family_correlations": {
     "confidence_inversion": {
-      "r": 0.894,
-      "p": 0.0162,
-      "n": 6,
+      "r": 0.8911,
+      "p": 0.0071,
+      "n": 7,
       "ci95": [
-        0.3004,
-        0.9884
+        0.4196,
+        0.9839
       ]
     },
     "control_baseline": {
       "r": null,
       "p": null,
-      "n": 6,
-      "note": "degenerate (TDR constant across models \u2014 family has no discriminating variant for this axis)"
+      "n": 7,
+      "note": "degenerate (TDR constant across models)"
     },
     "expertise_trap": {
-      "r": -0.8578,
-      "p": 0.0289,
-      "n": 6,
+      "r": -0.7892,
+      "p": 0.0349,
+      "n": 7,
       "ci95": [
-        -0.9842,
-        -0.1522
+        -0.9673,
+        -0.0891
       ]
     },
     "forced_abstention": {
-      "r": -0.8893,
-      "p": 0.0177,
-      "n": 6,
+      "r": -0.8071,
+      "p": 0.0282,
+      "n": 7,
       "ci95": [
-        -0.9879,
-        -0.2794
+        -0.9704,
+        -0.1378
       ]
     },
     "over_specification": {
-      "r": 0.0753,
-      "p": 0.8873,
-      "n": 6,
+      "r": 0.0421,
+      "p": 0.9286,
+      "n": 7,
       "ci95": [
-        -0.7842,
-        0.8358
+        -0.7342,
+        0.7707
       ]
     }
   },
   "effect_size_clean_vs_mirage": {
     "cohens_d": 2.6548
   },
-  "mi_spread": 0.1672,
+  "mi_spread": 0.208,
   "key_finding": "NOVEL FINDING: While global TDR-accuracy correlation is r=-0.94, within the 'control_baseline' family the correlation is r=0.00 \u2014 near zero or negative. This confirms that metacognitive monitoring and factual accuracy are dissociable cognitive faculties: a model can be highly accurate on clean tasks while systematically failing to detect expertise-level traps. Cohen's d=2.65 confirms the mirage tasks are non-trivially harder.",
   "loo_stability": {
     "global_tdr_vs_accuracy": {
       "loo_r_values": [
-        -0.9367,
-        -0.942,
-        -0.9403,
-        -0.9378,
-        -0.9702,
-        -0.9716
+        -0.9437,
+        -0.8229,
+        -0.8339,
+        -0.8337,
+        -0.814,
+        -0.8234,
+        -0.8342
       ],
-      "min_abs_r": 0.9367,
+      "min_abs_r": 0.814,
       "sign_stable": true,
-      "min_r": -0.9716,
-      "max_r": -0.9367
+      "min_r": -0.9437,
+      "max_r": -0.814
     },
     "family_confidence_inversion_tdr_vs_accuracy": {
       "loo_r_values": [
-        0.8522,
-        0.9251,
-        0.9015,
-        0.9164,
-        0.8866,
-        0.9152
+        0.894,
+        0.8634,
+        0.9319,
+        0.8918,
+        0.9036,
+        0.8784,
+        0.9049
       ],
-      "min_abs_r": 0.8522,
+      "min_abs_r": 0.8634,
       "sign_stable": true,
-      "min_r": 0.8522,
-      "max_r": 0.9251
+      "min_r": 0.8634,
+      "max_r": 0.9319
     },
     "family_control_baseline_tdr_vs_accuracy": {
-      "note": "degenerate (TDR constant \u2014 no LOO signal)"
+      "note": "degenerate"
     },
     "family_expertise_trap_tdr_vs_accuracy": {
       "loo_r_values": [
-        -0.8004,
-        -0.8519,
-        -0.8489,
-        -0.8926,
-        -0.8758,
-        -0.9252
+        -0.8578,
+        -0.7419,
+        -0.7939,
+        -0.769,
+        -0.7931,
+        -0.7672,
+        -0.8416
       ],
-      "min_abs_r": 0.8004,
+      "min_abs_r": 0.7419,
       "sign_stable": true,
-      "min_r": -0.9252,
-      "max_r": -0.8004
+      "min_r": -0.8578,
+      "max_r": -0.7419
     },
     "family_forced_abstention_tdr_vs_accuracy": {
       "loo_r_values": [
-        -0.8436,
-        -0.963,
-        -0.8936,
-        -0.8629,
-        -0.8874,
-        -0.8825
+        -0.8893,
+        -0.7574,
+        -0.8478,
+        -0.816,
+        -0.7844,
+        -0.7782,
+        -0.7714
       ],
-      "min_abs_r": 0.8436,
+      "min_abs_r": 0.7574,
       "sign_stable": true,
-      "min_r": -0.963,
-      "max_r": -0.8436
+      "min_r": -0.8893,
+      "max_r": -0.7574
     },
     "family_over_specification_tdr_vs_accuracy": {
       "loo_r_values": [
-        -0.2924,
-        0.1089,
-        0.0504,
-        0.1419,
-        -0.2591,
-        0.7505
+        0.0753,
+        -0.2625,
+        0.0616,
+        0.017,
+        0.0831,
+        -0.3248,
+        0.7192
       ],
-      "min_abs_r": 0.0504,
+      "min_abs_r": 0.017,
       "sign_stable": false,
-      "min_r": -0.2924,
-      "max_r": 0.7505
+      "min_r": -0.3248,
+      "max_r": 0.7192
     }
   },
-  "methodology_note": "Per-family TDR is correlated against GLOBAL aq_clean (the stable capability axis across all 50 tasks) rather than within-family clean_aq. This corrects a degenerate r=0 artifact in families that have no clean-pair tasks (over_specification, control_baseline). Global correlation and per-model profiles are unchanged."
+  "methodology_note": "Per-family TDR is correlated against GLOBAL aq_clean (the stable capability axis across all 50 tasks) rather than within-family clean_aq. This corrects a degenerate r=0 artifact in families that have no clean-pair tasks (over_specification, control_baseline). Global correlation and per-model profiles are unchanged. Model pool expanded to n=7: claude-haiku-4-5-20251001, claude-opus-4-5, claude-sonnet-4-5, gemini-1.5-pro, gpt-4o, gpt-4o-mini, llama-3-70b."
 }

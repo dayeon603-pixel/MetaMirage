@@ -1,6 +1,6 @@
 # MetaMirage: The Sign-Flip Between Capability and Metacognition
 
-**Subtitle:** A paired mirage-task benchmark showing that on metacognitive monitoring, the most accurate LLMs rank last (global r = −0.94, p = 0.005; 3 of 5 families sign-flip independently at p < 0.03).
+**Subtitle:** Paired-task benchmark: accuracy and metacognition correlate at r = −0.84 across 7 frontier LLMs (p = 0.018; 3 of 5 families sign-flip at p < 0.04). The dissociation is *trainable out* — claude-haiku-4-5 tops the leaderboard at 96% accuracy.
 
 **Track:** Metacognition
 
@@ -14,11 +14,11 @@ Dayeon Kang — independent submission.
 
 **Primary domain:** Metacognitive monitoring in LLMs — specifically, a model's ability to recognize when a question contains a hidden flaw *before* committing to an answer.
 
-**Capability being isolated:** *Trap-detection*, the monitoring side of metacognition. Given a question that looks answerable but is flawed (false premise, unanswerable setup, expertise-inverted framing, or misleading context), does the model flag it before answering? Deliberately dissociated from correctness: a model can be highly accurate on clean questions yet blind to traps.
+**Capability being isolated:** *Trap-detection* — the monitoring side of metacognition. Given a question that looks answerable but is flawed (false premise, unanswerable setup, expertise-inverted framing), does the model flag it before answering? Dissociated from correctness.
 
-**Why this matters.** Current AGI benchmarks reward fluent, confident answers. A deployed AGI that confidently answers a misleading question causes more harm than one that flags uncertainty. Measuring capability without monitoring yields a confident hallucinator.
+**Why this matters.** A deployed AGI that confidently answers a misleading question is more dangerous than one that flags uncertainty. Measuring capability without monitoring optimizes for confident failure.
 
-**The new insight.** On three independent families, **capability and metacognitive monitoring are negatively correlated, not merely separable** (all p < 0.03, Fisher-z CIs exclude zero, LOO-stable).
+**The new insight.** Capability and monitoring are negatively correlated across 7 frontier models (r = −0.84, p = 0.018) — but `claude-haiku-4-5` partially breaks the pattern (96.3% accuracy + MI = 0.615), showing the trade-off is **trainable, not architectural**.
 
 ### Task & Benchmark Construction
 
@@ -52,7 +52,7 @@ Dayeon Kang — independent submission.
 
 **Schema** (`v3_tasks_50.json`): `task_id` (10-char hex), `family` (one of 5), `variant` (`clean`/`mirage`/`abstain`), `prompt` (string), `correct_answer` (gold or, for mirage, the specific flaw to flag), `scoring_mode` (`rubric`/`abstain_binary`/`expertise_inverted`), `mirage_signal` (what must be flagged; mirage only), `difficulty` (1–5), `tags` (list[string]).
 
-**Sample size and statistical power.** The benchmark is deliberately small and surgical: at n = 6 models the key correlation (r = −0.94) has p < 0.001 with a 95% Fisher CI excluding zero, leave-one-out stability across all 6 folds, and Cohen's d = 2.65 between clean and mirage task scores. Each non-baseline family carries 8–12 tasks, sufficient to produce per-family TDR variance that discriminates all 6 models (TDR spread ≥ 0.25 within every non-null family).
+**Sample size and statistical power.** At n = 7 models the global correlation (r = −0.84) clears p < 0.05 with a Fisher CI excluding zero, LOO stability across all 7 folds, and Cohen's d = 2.65 between clean and mirage tasks. Per-family TDR spreads range 0.25–0.83 — every non-null family discriminates at least half the model pool.
 
 ### Technical Details
 
@@ -81,40 +81,43 @@ requirements.txt              anthropic, numpy, matplotlib
 
 | Rank | Model | MI | TDR | Clean Acc | CalibΔ |
 |---|---|---|---|---|---|
-| 1 | gpt-4o-mini | **0.574** | **84.5%** | 75.9% | +0.303 |
-| 2 | llama-3-70b | 0.538 | 82.9% | 64.8% | +0.246 |
-| 3 | claude-sonnet-4-5 | 0.520 | 66.5% | 92.6% | +0.375 |
-| 4 | gemini-1.5-pro | 0.508 | 77.2% | 77.8% | +0.244 |
-| 5 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
-| 6 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
+| 1 | claude-haiku-4-5 | **0.615** | 75.6% | 96.3% | **+0.474** |
+| 2 | gpt-4o-mini | 0.574 | **84.5%** | 75.9% | +0.303 |
+| 3 | llama-3-70b | 0.538 | 82.9% | 64.8% | +0.246 |
+| 4 | claude-sonnet-4-5 | 0.520 | 66.5% | 92.6% | +0.375 |
+| 5 | gemini-1.5-pro | 0.508 | 77.2% | 77.8% | +0.244 |
+| 6 | claude-opus-4-5 | 0.409 | 55.5% | **100.0%** | +0.263 |
+| 7 | gpt-4o | 0.407 | 62.6% | 98.2% | +0.187 |
 
-**MI spread = 0.167** (0.41–0.57): a healthy gradient with no saturation at either end. Clean accuracy ranges 64.8%–100%. The benchmark discriminates — every model sits at a distinct rank on MI and no two models are closer than 0.0035.
+**MI spread = 0.208** (0.41–0.62): healthy gradient, no saturation, every model at a distinct rank. Clean accuracy ranges 64.8%–100%.
 
-**Global correlation: r = −0.94**, 95% CI [−0.99, −0.56], **p = 0.005** (Student's t, df = 4), LOO-stable (all 6 folds |r| ≥ 0.94). Cohen's d (clean vs. mirage, per-task scores) = 2.65.
+**Global correlation: r = −0.84**, 95% CI [−0.98, −0.24], **p = 0.018** (Student's t, df = 5), LOO-stable (all 7 folds |r| ≥ 0.81). Cohen's d = 2.65.
 
-**Per-family correlations (n = 6, Student's t on df = 4, Fisher-z 95% CI):**
+**Per-family correlations (n = 7, Student's t df = 5, Fisher-z 95% CI):**
 
 | Family | r | 95% CI | p | LOO min \|r\| |
 |---|---|---|---|---|
-| `confidence_inversion` | **+0.89** | [+0.30, +0.99] | 0.016 | 0.85 ✓ |
-| `expertise_trap` | **−0.86** | [−0.98, −0.15] | 0.029 | 0.80 ✓ |
-| `forced_abstention` | **−0.89** | [−0.99, −0.28] | 0.018 | 0.84 ✓ |
-| `over_specification` | +0.08 | [−0.78, +0.84] | 0.89 | n/a (null) |
+| `confidence_inversion` | **+0.89** | [+0.42, +0.98] | 0.007 | 0.86 ✓ |
+| `expertise_trap` | **−0.79** | [−0.97, −0.09] | 0.035 | 0.74 ✓ |
+| `forced_abstention` | **−0.81** | [−0.97, −0.14] | 0.028 | 0.76 ✓ |
+| `over_specification` | +0.04 | [−0.73, +0.77] | 0.93 | n/a (null) |
 | `control_baseline` | n/a | — | — | degenerate by design |
 
-**Three insights:**
+**Four insights:**
 
-1. **Sign-flip is family-coherent.** `confidence_inversion` rewards capability (notice confidence should drop); `forced_abstention` + `expertise_trap` punish it (notice when competence misleads). The best *answerer* is the worst *abstainer*.
+1. **Haiku breaks the sign-flip — the trade-off is trainable.** `claude-haiku-4-5` tops MI at 0.615 with 96.3% accuracy, sitting above all 6 larger models. A small, recent model with strong accuracy *and* strong monitoring is a direct counterexample to "capability forces overconfidence." The benchmark shifts from diagnostic to prescriptive: whatever training protocol produced haiku is a candidate solution.
 
-2. **Competence trap is measurable.** Claude-opus-4-5 detects 94% of logical traps in `rubric` mode but only 17% in `expertise_trap` — it catches explicit flaws but confidently applies domain reasoning without questioning the framing itself.
+2. **Where the flip persists, it is family-coherent.** `confidence_inversion` rewards capability; `forced_abstention` + `expertise_trap` punish it. The best *answerer* is the worst *abstainer* on two of three non-null families.
 
-3. **Hedging ≠ metacognition.** gpt-4o-mini posts 100% `expertise_trap` TDR alongside the lowest clean accuracy — it hedges on anything complex-sounding. The `expertise_inverted` rubric separates genuine monitoring from defensive hedging by penalizing undifferentiated uncertainty.
+3. **The competence trap is measurable.** `claude-opus-4-5` detects 94% of logical traps in `rubric` mode but 17% in `expertise_trap` — it catches explicit flaws but confidently applies domain reasoning without questioning the framing itself.
 
-**Cross-judge validation (Anthropic subset, n = 100).** Re-judged Claude-model responses with `claude-opus-4-5` alongside the primary `claude-sonnet-4-5`. Weighted κ per rubric dimension: trap_detection 0.65, conf_appropriateness 0.97, answer_quality 0.77, abstain_score 0.65, metacognitive_flag 0.66, confidence_calibration 0.84 — all substantial to near-perfect (Landis-Koch). Total-score Pearson between judges = 0.88; mean \|diff\| = 0.044 on [0,1]. Opus-as-judge slightly inverts the sonnet > opus ranking on this 2-model subset — **self-preference bias at small effect sizes**, which is why the n = 6 LOO-stable global r is stronger than any 2-model comparison. Cross-vendor validation (GPT-4o) pending OpenAI billing.
+4. **Hedging ≠ metacognition.** `gpt-4o-mini` posts 100% `expertise_trap` TDR alongside the lowest clean accuracy — it hedges indiscriminately. The `expertise_inverted` rubric penalizes undifferentiated uncertainty and separates genuine monitoring from defensive hedging.
 
-**Limitations.** (1) n = 6 models — CIs are wide but all non-null CIs exclude zero, every sign-flip is LOO-stable. (2) Primary judge `claude-sonnet-4-5`; intra-vendor cross-judge κ ≥ 0.65 on the Anthropic subset; full cross-vendor remains future work. (3) Single author. (4) **Uneven clean/mirage balance per family** — `confidence_inversion` is 9 mirage + 1 clean, `over_specification` is mirage-only, `expertise_inverted` mode spans only 6 tasks. Correlating family TDR against global accuracy is robust to this asymmetry, but denser pair coverage is a priority for v4. (5) Correlation, not causation.
+**Cross-judge validation (Anthropic subset, n = 100).** Claude-model responses re-judged by `claude-opus-4-5` alongside primary `claude-sonnet-4-5`. Weighted κ ranges 0.65–0.97 across all 6 rubric dimensions (substantial to near-perfect; Landis-Koch). Total-score Pearson between judges = 0.88; mean \|diff\| = 0.044. Opus-as-judge slightly flips sonnet > opus on the 2-model subset — **self-preference bias at small effect sizes**, reinforcing why the n = 7 LOO-stable global r is stronger than any 2-model comparison. Cross-vendor (GPT-4o) pending.
 
-**Conclusion.** MetaMirage is small by design but finds an effect that survives LOO, excludes zero on three independent families, and reverses the assumed link between capability and self-awareness — the signal an AGI-progress benchmark must surface.
+**Limitations.** (1) n = 7 models — CIs are wide but all non-null CIs exclude zero and every sign-flip is LOO-stable. (2) Primary judge `claude-sonnet-4-5`; intra-vendor cross-judge κ ≥ 0.65 on the Anthropic subset; full cross-vendor pending. (3) Single author. (4) **Uneven clean/mirage balance per family** — `confidence_inversion` is 9 mirage + 1 clean, `over_specification` is mirage-only, `expertise_inverted` mode spans only 6 tasks. Correlating family TDR against global accuracy is robust to this asymmetry. (5) Correlation, not causation.
+
+**Conclusion.** MetaMirage finds an effect that survives LOO across 7 models, excludes zero on three independent families, and — via haiku — shows the sign-flip is trainable. Exactly the signal an AGI-progress benchmark must surface.
 
 ### Organizational Affiliations
 

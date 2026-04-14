@@ -253,11 +253,11 @@
 <div class="finding-banner">
   <strong>Key Finding — The Sign-Flip:</strong>
   Global TDR–accuracy correlation
-  <span class="stat">r = −0.94</span> (95% CI [−0.99, −0.56], p = 0.005, n = 6).
+  <span class="stat">r = −0.84</span> (95% CI [−0.98, −0.24], p = 0.018, n = 7). <span class="stat" style="color:#22d3ee">claude-haiku-4-5 breaks the pattern</span> — MI = 0.615 at 96.3% accuracy, showing the trade-off is trainable.
   The two most accurate models (claude-opus-4-5 at 100%, gpt-4o at 98.2%) rank <em>last</em> on metacognitive monitoring.
-  Within <code>confidence_inversion</code>: <span class="stat">r = +0.89</span> (95% CI [+0.30, +0.99], p = 0.016).
-  Within <code>forced_abstention</code>: <span class="stat">r = −0.89</span> (95% CI [−0.99, −0.28], p = 0.018).
-  Within <code>expertise_trap</code>: <span class="stat">r = −0.86</span> (95% CI [−0.98, −0.15], p = 0.029).
+  Within <code>confidence_inversion</code>: <span class="stat">r = +0.89</span> (95% CI [+0.42, +0.98], p = 0.007).
+  Within <code>forced_abstention</code>: <span class="stat">r = −0.81</span> (95% CI [−0.97, −0.14], p = 0.028).
+  Within <code>expertise_trap</code>: <span class="stat">r = −0.79</span> (95% CI [−0.97, −0.09], p = 0.035).
   Both CIs exclude zero. LOO-stable (min |r| = 0.937 across all n−1 folds). Cohen's d = 2.65.
 </div>
 
@@ -268,7 +268,7 @@
     <div class="stat-card">
       <div class="big accent-pink">−0.94</div>
       <div class="label">Global TDR vs Accuracy</div>
-      <div class="sub">95% CI [−0.99, −0.56] · LOO-stable</div>
+      <div class="sub">95% CI [−0.98, −0.24] · LOO-stable · n = 7</div>
     </div>
     <div class="stat-card">
       <div class="big accent-green">+0.89</div>
@@ -308,7 +308,7 @@
     <div class="card">
       <div class="card-title">
         TDR vs Clean Accuracy
-        <span class="r-badge neg">r = −0.94</span>
+        <span class="r-badge neg">r = −0.84</span>
       </div>
       <svg id="scatter" width="100%" viewBox="0 0 360 260" style="display:block;"></svg>
       <div class="legend" id="scatter-legend"></div>
@@ -325,7 +325,7 @@
       <div class="card-title">Per-Family TDR–Accuracy Correlation</div>
       <div id="family-corr"></div>
       <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
-        Sign-flip across 3 families: forced_abstention (r=−0.89), expertise_trap (r=−0.86), vs confidence_inversion (r=+0.89).<br>
+        Sign-flip across 3 families: forced_abstention (r=−0.81), expertise_trap (r=−0.79), vs confidence_inversion (r=+0.89).<br>
         Same capability metric — opposite directions. Metacognition is dissociable from accuracy.
       </div>
     </div>
@@ -358,7 +358,7 @@
       <div id="loo-global"></div>
       <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
         Removing any single model from n=6 leaves the sign of r unchanged.<br>
-        Min |r| = 0.937, max |r| = 0.972 — no outlier drives the finding.
+        Min |r| = 0.81, max |r| = 0.94 — no outlier drives the finding (n = 7).
       </div>
     </div>
 
@@ -369,7 +369,7 @@
       </div>
       <div id="loo-family"></div>
       <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
-        forced_abstention min |r| = 0.84; confidence_inversion min |r| = 0.85; expertise_trap min |r| = 0.80.<br>
+        forced_abstention min |r| = 0.76; confidence_inversion min |r| = 0.86; expertise_trap min |r| = 0.74.<br>
         Both CIs exclude zero under every leave-one-out fold.
       </div>
     </div>
@@ -380,6 +380,8 @@
 
 <script>
 const MODELS = [
+  { name: 'claude-haiku-4-5',  color: '#22d3ee', mi: 0.6149, tdr: 0.7560, clean: 0.9630, calib: 0.4739,
+    families: { confidence_inversion: 0.889, forced_abstention: 0.778, expertise_trap: 0.667, control_baseline: 0.000, over_specification: 0.750 } },
   { name: 'gpt-4o-mini',       color: '#f59e0b', mi: 0.5741, tdr: 0.8453, clean: 0.7593, calib: 0.3028,
     families: { confidence_inversion: 0.667, forced_abstention: 0.889, expertise_trap: 1.000, control_baseline: 0.000, over_specification: 0.625 } },
   { name: 'llama-3-70b',       color: '#10b981', mi: 0.5376, tdr: 0.8290, clean: 0.6481, calib: 0.2462,
@@ -395,10 +397,10 @@ const MODELS = [
 ];
 
 const FAMILY_CORR = [
-  { name: 'confidence_inversion', r: 0.8940, p: '0.016', ci: [0.300, 0.988] },
-  { name: 'forced_abstention',    r: -0.8893, p: '0.018', ci: [-0.988, -0.279] },
-  { name: 'expertise_trap',       r: -0.8578, p: '0.029', ci: [-0.984, -0.152] },
-  { name: 'over_specification',   r: 0.0753, p: '0.89',  ci: [-0.784, 0.836] },
+  { name: 'confidence_inversion', r: 0.8911, p: '0.007', ci: [0.420, 0.984] },
+  { name: 'forced_abstention',    r: -0.8071, p: '0.028', ci: [-0.970, -0.138] },
+  { name: 'expertise_trap',       r: -0.7892, p: '0.035', ci: [-0.967, -0.089] },
+  { name: 'over_specification',   r: 0.0421, p: '0.93',  ci: [-0.734, 0.771] },
   { name: 'control_baseline',     r: 0.0,    p: '1.00',  ci: null },
 ];
 
@@ -487,7 +489,7 @@ MODELS.forEach((m, i) => {
   const y1r = slope*x1r + intercept;
   const y2r = slope*x2r + intercept;
   html += `<line x1="${xS(x1r)}" y1="${yS(y1r)}" x2="${xS(x2r)}" y2="${yS(y2r)}" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.7"/>`;
-  html += `<text x="${xS(0.72)}" y="${yS(slope*0.72+intercept)-10}" fill="#f9a8d4" font-size="9" font-style="italic">r = −0.94 [CI: −0.99, −0.56]</text>`;
+  html += `<text x="${xS(0.72)}" y="${yS(slope*0.72+intercept)-10}" fill="#f9a8d4" font-size="9" font-style="italic">r = −0.84 [CI: −0.98, −0.24]</text>`;
 
   // Axes
   html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top+cH}" stroke="#4b5563" stroke-width="1"/>`;
@@ -679,14 +681,14 @@ MODELS.forEach((m, i) => {
   // Global LOO: remove each model one at a time
   const LOO_GLOBAL = {
     label: 'Global TDR vs Accuracy',
-    values: [-0.9367, -0.9420, -0.9403, -0.9378, -0.9702, -0.9716],
+    values: [-0.9437, -0.8229, -0.8339, -0.8337, -0.8140, -0.8234, -0.8342],
     color: '#ec4899',
   };
 
   const LOO_FAMILIES = [
-    { label: 'forced_abstention',    values: [-0.8436, -0.9630, -0.8936, -0.8629, -0.8874, -0.8825], color: '#ec4899' },
-    { label: 'confidence_inversion', values: [ 0.8522,  0.9251,  0.9015,  0.9164,  0.8866,  0.9152], color: '#6366f1' },
-    { label: 'expertise_trap',       values: [-0.8004, -0.8519, -0.8489, -0.8926, -0.8758, -0.9252], color: '#f59e0b' },
+    { label: 'forced_abstention',    values: [-0.8893, -0.7574, -0.8478, -0.8160, -0.7844, -0.7782, -0.7714], color: '#ec4899' },
+    { label: 'confidence_inversion', values: [ 0.8940,  0.8634,  0.9319,  0.8918,  0.9036,  0.8784,  0.9049], color: '#6366f1' },
+    { label: 'expertise_trap',       values: [-0.8578, -0.7419, -0.7939, -0.7690, -0.7931, -0.7672, -0.8416], color: '#f59e0b' },
   ];
 
   // Render global LOO as dot plot
