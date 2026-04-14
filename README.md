@@ -175,6 +175,18 @@ Per-family TDR is correlated against **global** clean-answer accuracy (`aq_clean
 
 The `over_specification` weak-null is itself informative: when the trap is "recognize that irrelevant constraints are distractors," all seven models detect it at roughly the same rate (TDR 0.63–0.88). This trap type does not separate capability levels — a clean negative result.
 
+### Within-Anthropic Generational Regression (new)
+
+Re-evaluating across two Anthropic release lineages (accuracy held constant) reveals the trade-off is a **recent training change**, not architectural:
+
+| Lineage | TDR trajectory | Δ TDR |
+|---|---|---|
+| **Opus** | 4.0 (0.87) → 4.1 (0.89) → **4.5 (0.55)** | **−0.32** |
+| **Sonnet** | 4.0 (0.83) → **4.5 (0.66)** | **−0.16** |
+| **Haiku** | 4.5 (0.76) — small model, retained | — |
+
+Both Opus and Sonnet **lost monitoring** in their latest 4.5 releases despite equal-or-higher accuracy. Haiku 4.5 retained it. This is direct, within-vendor, controlled evidence that the capability/monitoring trade-off was *actively trained in* between Opus 4.1 and Opus 4.5 — exactly what the RLHF-confidence-pressure mechanistic hypothesis predicts. See `data/generational_report.json` for full data, `generational_regression.png` for visualization.
+
 ### Cross-Judge Validation (Anthropic Subset)
 
 To defend against single-judge bias, responses from the two Claude models (n = 100) were re-judged with `claude-opus-4-5` alongside the primary `claude-sonnet-4-5`. Weighted Cohen's κ per rubric dimension:
