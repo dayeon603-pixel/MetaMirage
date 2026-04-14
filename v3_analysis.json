@@ -478,7 +478,7 @@
     "cohens_d": 2.6548
   },
   "mi_spread": 0.208,
-  "key_finding": "NOVEL FINDING: While global TDR-accuracy correlation is r=-0.94, within the 'control_baseline' family the correlation is r=0.00 \u2014 near zero or negative. This confirms that metacognitive monitoring and factual accuracy are dissociable cognitive faculties: a model can be highly accurate on clean tasks while systematically failing to detect expertise-level traps. Cohen's d=2.65 confirms the mirage tasks are non-trivially harder.",
+  "key_finding": "NOVEL FINDING: While global TDR-accuracy correlation is r=-0.84, within the 'control_baseline' family the correlation is r=0.00 \u2014 near zero or negative. This confirms that metacognitive monitoring and factual accuracy are dissociable cognitive faculties: a model can be highly accurate on clean tasks while systematically failing to detect expertise-level traps. Cohen's d=2.65 confirms the mirage tasks are non-trivially harder.",
   "loo_stability": {
     "global_tdr_vs_accuracy": {
       "loo_r_values": [

@@ -63,7 +63,7 @@ v3_tasks_50.json              50 benchmark tasks (canonical)
 v3_judge_evaluator.py         LLM-as-judge evaluation engine (3 scoring modes)
 v3_statistical_analysis.py    Cross-model stats, LOO, Fisher CIs, effect sizes
 v3_regenerate_family_stats.py Surgical regenerator (corrected methodology patch)
-v3_analysis.json              Full results from the 6-model evaluation
+v3_analysis.json              Full results from the 7-model evaluation
 kaggle_task.py                Kaggle Benchmarks SDK wrapper (identical task set)
 kaggle_submission.ipynb       Executed public notebook
 dashboard.html                Self-contained interactive results dashboard
