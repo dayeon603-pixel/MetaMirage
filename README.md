@@ -32,7 +32,7 @@ Accuracy measures what a model knows. MetaMirage measures whether it knows when 
 
 Current AI benchmarks test *what* models know; they measure whether a model produces the correct answer. They do not test whether a model *knows when it is about to be wrong*. This gap is critical: a deployed system that confidently answers a misleading question causes far more harm than one that correctly flags its own uncertainty.
 
-**CognitiveMirage** is built on one core insight: **the ability to detect a trap before answering is a stronger signal of metacognitive ability than correctness alone.** We achieve this by constructing paired tasks: a *clean* variant that is genuinely answerable and a *mirage* variant that appears superficially identical but contains a hidden flaw. We then measure three things:
+**MetaMirage** is built on one core insight: **the ability to detect a trap before answering is a stronger signal of metacognitive ability than correctness alone.** We achieve this by constructing paired tasks: a *clean* variant that is genuinely answerable and a *mirage* variant that appears superficially identical but contains a hidden flaw. We then measure three things:
 
 1. **Trap Detection Rate (TDR):** Does the model flag the flaw *before* answering?
 2. **Calibration Delta (CD):** Does expressed confidence drop appropriately on mirage tasks?
