@@ -258,7 +258,7 @@
   Within <code>confidence_inversion</code>: <span class="stat">r = +0.89</span> (95% CI [+0.42, +0.98], p = 0.007).
   Within <code>forced_abstention</code>: <span class="stat">r = −0.81</span> (95% CI [−0.97, −0.14], p = 0.028).
   Within <code>expertise_trap</code>: <span class="stat">r = −0.79</span> (95% CI [−0.97, −0.09], p = 0.035).
-  Both CIs exclude zero. LOO-stable (min |r| = 0.937 across all n−1 folds). Cohen's d = 2.65.
+  Both CIs exclude zero. LOO-stable (min |r| = 0.814 across all n−1 folds). Cohen's d = 2.65.
 </div>
 
 <main>
@@ -266,19 +266,19 @@
   <!-- Stat strip -->
   <div class="grid-3" style="margin-top:1.25rem;">
     <div class="stat-card">
-      <div class="big accent-pink">−0.94</div>
+      <div class="big accent-pink">−0.84</div>
       <div class="label">Global TDR vs Accuracy</div>
       <div class="sub">95% CI [−0.98, −0.24] · LOO-stable · n = 7</div>
     </div>
     <div class="stat-card">
       <div class="big accent-green">+0.89</div>
       <div class="label">confidence_inversion r</div>
-      <div class="sub">95% CI [+0.75, +1.00] · CI excludes zero</div>
+      <div class="sub">95% CI [+0.42, +0.98] · CI excludes zero</div>
     </div>
     <div class="stat-card">
       <div class="big accent-indigo">2.65</div>
       <div class="label">Cohen's d (clean vs mirage)</div>
-      <div class="sub">MI spread: 0.167</div>
+      <div class="sub">MI spread: 0.208</div>
     </div>
   </div>
 
@@ -357,7 +357,7 @@
       </div>
       <div id="loo-global"></div>
       <div style="margin-top:0.75rem;font-size:0.73rem;color:var(--muted);">
-        Removing any single model from n=6 leaves the sign of r unchanged.<br>
+        Removing any single model from n=7 leaves the sign of r unchanged.<br>
         Min |r| = 0.81, max |r| = 0.94 — no outlier drives the finding (n = 7).
       </div>
     </div>
@@ -458,20 +458,20 @@ MODELS.forEach((m, i) => {
     html += `<text x="${pad.left-6}" y="${y+4}" text-anchor="end" fill="#6b7280" font-size="9">${(v*100).toFixed(0)}%</text>`;
   });
 
-  // Regression line + 95% CI band (Fisher z-transform; r=-0.94, CI=[-0.994,-0.564])
+  // Regression line + 95% CI band (Fisher z-transform; r=-0.84, CI=[-0.976,-0.240])
   // OLS: x=clean acc, y=tdr
   const xs = MODELS.map(m => m.clean);
   const ys = MODELS.map(m => m.tdr);
-  const mx = xs.reduce((a,b)=>a+b,0)/6;
-  const my = ys.reduce((a,b)=>a+b,0)/6;
+  const mx = xs.reduce((a,b)=>a+b,0)/7;
+  const my = ys.reduce((a,b)=>a+b,0)/7;
   const num = xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
   const den = xs.reduce((s,x)=>s+(x-mx)**2,0);
-  const sdx = Math.sqrt(den/5);
-  const sdy = Math.sqrt(ys.reduce((s,y)=>s+(y-my)**2,0)/5);
+  const sdx = Math.sqrt(den/6);
+  const sdy = Math.sqrt(ys.reduce((s,y)=>s+(y-my)**2,0)/6);
   const slope = num/den;
   const intercept = my - slope*mx;
-  // CI band: slopes for r_lo=-0.994 and r_hi=-0.564
-  const r_lo = -0.994, r_hi = -0.564;
+  // CI band: slopes for r_lo=-0.976 and r_hi=-0.240
+  const r_lo = -0.976, r_hi = -0.240;
   const slope_lo = r_lo * sdy / sdx;
   const slope_hi = r_hi * sdy / sdx;
   const int_lo = my - slope_lo * mx;
