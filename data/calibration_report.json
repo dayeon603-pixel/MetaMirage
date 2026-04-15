@@ -1,0 +1,30 @@
+{
+  "method": "Brier score and Expected Calibration Error (ECE, 5 equal-width bins) on rubric-mode tasks. Confidence derived from conf_appropriate rubric (0\u21920.1, 1\u21920.33, 2\u21920.67, 3\u21920.9). Correctness binarized from answer_quality >= 2. Lower Brier and ECE = better calibrated.",
+  "claude-opus-4-5": {
+    "n_rubric_tasks": 35,
+    "brier_score": 0.2214,
+    "ECE_5_bins": 0.3074,
+    "brier_clean": 0.01,
+    "brier_mirage": 0.4452,
+    "mean_confidence": 0.6354,
+    "mean_accuracy": 0.9429
+  },
+  "claude-sonnet-4-5": {
+    "n_rubric_tasks": 35,
+    "brier_score": 0.2242,
+    "ECE_5_bins": 0.314,
+    "brier_clean": 0.01,
+    "brier_mirage": 0.451,
+    "mean_confidence": 0.6289,
+    "mean_accuracy": 0.9429
+  },
+  "claude-haiku-4-5-20251001": {
+    "n_rubric_tasks": 35,
+    "brier_score": 0.2013,
+    "ECE_5_bins": 0.2969,
+    "brier_clean": 0.01,
+    "brier_mirage": 0.4039,
+    "mean_confidence": 0.6746,
+    "mean_accuracy": 0.9714
+  }
+}
