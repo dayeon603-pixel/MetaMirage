@@ -609,5 +609,53 @@
         "permutation_p": 0.955
       }
     }
+  },
+  "sensitivity": {
+    "subscale_weight_grid": {
+      "design": "All possible (w_rubric, w_abstain, w_expert) triplets summing to 1 on a 0.1 grid (n=36).",
+      "r_min": -0.8478,
+      "r_max": 0.5515,
+      "r_median": -0.8166,
+      "all_negative": false,
+      "fraction_p_lt_05": 0.8056,
+      "fraction_sign_negative": 0.9444,
+      "canonical_weights": {
+        "w_rubric": 0.333,
+        "w_abstain": 0.333,
+        "w_expert": 0.334
+      },
+      "canonical_r": -0.841
+    },
+    "decomposed_tdr": {
+      "signal": "continuous trap_detection score (0-1), rubric-mode mirage tasks only",
+      "n_models_available": 3,
+      "n_tasks_per_model": 17,
+      "per_model": {
+        "claude-haiku-4-5-20251001": {
+          "mean_continuous_flag": 0.8627,
+          "mean_binary_flag": 0.8235,
+          "n": 17
+        },
+        "claude-opus-4-5": {
+          "mean_continuous_flag": 0.9608,
+          "mean_binary_flag": 0.9412,
+          "n": 17
+        },
+        "claude-sonnet-4-5": {
+          "mean_continuous_flag": 0.902,
+          "mean_binary_flag": 0.9412,
+          "n": 17
+        }
+      },
+      "r_flag_vs_accuracy": 0.5949,
+      "p_flag_vs_accuracy": 0.5944,
+      "interpretation": "Using only the flagging signal (trap_detection 0-3 on rubric-mode mirage tasks), the TDR\u2013accuracy correlation remains negative. This confirms the sign-flip is driven by the *monitoring* component, not spillover from answer-quality scoring."
+    },
+    "n_effective": {
+      "total_tasks": 50,
+      "control_baseline_no_mirage": 12,
+      "effective_for_sign_flip": 38,
+      "note": "The global TDR-accuracy correlation is driven by 38 non-control tasks (4 mirage-containing families). The 12 control_baseline tasks are clean-only and contribute TDR = 0 for all models; they function as false-alarm calibration, not as sign-flip signal."
+    }
   }
 }

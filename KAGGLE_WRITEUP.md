@@ -28,7 +28,7 @@ Dayeon Kang — independent submission.
 
 **Mirage-pair design.** Each trap is presented as a *clean* variant (answerable) and a *mirage* variant (looks identical but is flawed). Correct behavior on a mirage: name the flaw before answering, or explicitly decline. Pair scoring isolates detection from absolute accuracy.
 
-**5 families × 3 scoring modes × 50 tasks.** All tasks authored from scratch; no overlap with MMLU, BIG-Bench, HellaSwag, or other public suites.
+**5 families × 3 modes × 50 tasks.** Authored from scratch; no overlap with public benchmarks.
 
 | Family | Trap Type | Scoring Mode | n |
 |---|---|---|---|
@@ -44,11 +44,11 @@ Dayeon Kang — independent submission.
 - `abstain_binary` — Abstain Score (0–3) + Answer Quality (0–3), 60/40.
 - `expertise_inverted` — Metacognitive Flag (0–3) + Calibration (0–3), 70/30. *A confident domain-correct answer scores lower than one that flags the meta-level flaw* — rewards knowing better over knowing more.
 
-**Kaggle SDK.** `kaggle_task.py` wraps the 50 tasks as `Task` objects with per-task `score_fn` and metadata, assembled into a `Benchmark` with `track="metacognition"`. `v3_tasks_50.json` is the single source of truth for the SDK, the evaluator, and the analysis.
+**Kaggle SDK.** `kaggle_task.py` wraps tasks as `Task` objects with per-task `score_fn`, assembled into a `Benchmark` with `track="metacognition"`. `v3_tasks_50.json` is the single source of truth.
 
-**Prompt robustness.** All models receive an identical system prompt that instructs them to state confidence, flag any noticed flaw *before* answering, then answer. Intentional — we test monitoring under a prompt that *invites* it; zero-shot monitoring is a separate study.
+**Prompt design.** Identical system prompt across models: state confidence, flag noticed flaws before answering. Intentional — we test monitoring under a prompt that *invites* it; zero-shot is separate study.
 
-**Output verification.** Responses scored by `claude-sonnet-4-5` under the mode-specific rubric. A keyword heuristic (`kaggle_task.py:evaluate_response`) provides an API-free smoke test.
+**Output verification.** Responses scored by `claude-sonnet-4-5` under mode-specific rubric. Keyword heuristic in `kaggle_task.py` provides API-free smoke test.
 
 ### Dataset
 
@@ -96,29 +96,13 @@ Dayeon Kang — independent submission.
 
 All three sign-flip families survive four independent tests (parametric t, Fisher-z CI, bootstrap CI, permutation) at p < 0.05. The null family is null on all four.
 
-**Four insights:**
+**Insights:** (1) **Generational regression** — Opus 4.0 → 4.5: TDR 0.87 → 0.55 (−32 pts), Sonnet 4.0 → 4.5: 0.83 → 0.66 (−16 pts), accuracy ≈ constant. Trade-off was actively trained in. (2) **Haiku breaks the pattern** — MI 0.615 + 96% accuracy refutes "capability forces overconfidence." (3) **Competence trap measurable** — Opus 4.5 detects 94% of logical traps in `rubric` mode but 17% in `expertise_trap`. (4) **Hedging ≠ metacognition** — gpt-4o-mini: 100% expertise TDR + lowest accuracy = indiscriminate hedging; `expertise_inverted` rubric penalizes this.
 
-1. **Generational regression in the latest Anthropic releases.** Opus 4.0 → 4.5: TDR 0.87 → 0.55 (−32 pts) with accuracy ≈ 100%. Sonnet 4.0 → 4.5: TDR 0.83 → 0.66 (−16 pts). Within-vendor, accuracy-controlled — the trade-off was actively trained in.
+**Within-Anthropic generational regression** *(new sub-finding, n = 6 Anthropic models, accuracy held constant).* Opus 4.0 (TDR 0.87, acc 0.98) → 4.1 (0.89, 0.96) → **4.5 (0.55, 1.00)** [Δ −0.32]. Sonnet 4.0 (0.83, 0.96) → 4.5 (0.66, 0.93) [Δ −0.16]. Haiku 4.5 retained it (0.76, 0.96). Direct, within-vendor, controlled evidence that the trade-off was *actively trained in* between Opus 4.1 and Opus 4.5 — exactly what the RLHF-confidence-pressure hypothesis predicts. Mechanism-level claim, not just correlation.
 
-2. **Haiku breaks the sign-flip.** `claude-haiku-4-5` tops MI at 0.615 with 96.3% accuracy. Counterexample to "capability forces overconfidence" — diagnostic becomes prescriptive.
+**Robustness checks.** Cross-judge: Claude responses (n = 150) re-judged by `claude-opus-4-5`; κ 0.65–0.97 across 6 dimensions, Pearson(judges) = 0.88, **haiku #1 holds under both**. Rubric-weight sensitivity: across all 36 (w_rubric, w_abstain, w_expert) triplets on a 0.1-grid, **94% give negative r, 81% reach p < 0.05** (median r = −0.82). n_effective: of 50 tasks, 12 are control-only; sign-flip is driven by 38 mirage-bearing tasks (disclosed for honest sample-size accounting).
 
-3. **Competence trap is measurable.** Opus 4.5: 94% `rubric` detection vs 17% on `expertise_trap` — catches explicit flaws but applies domain reasoning without questioning the frame.
-
-4. **Hedging ≠ metacognition.** gpt-4o-mini: 100% expertise TDR + lowest accuracy = indiscriminate hedging. The `expertise_inverted` rubric penalizes undifferentiated uncertainty.
-
-**Within-Anthropic generational regression** *(new finding — n = 6 Anthropic models, accuracy held ≈ constant).* Re-evaluating across two Anthropic release lineages reveals the trade-off is not architectural but a recent training change:
-
-| Lineage | Older release | Current release | Δ TDR |
-|---|---|---|---|
-| Opus | 4.0: TDR 0.87, acc 0.98 | **4.5: TDR 0.55, acc 1.00** | **−0.32** |
-| Sonnet | 4.0: TDR 0.83, acc 0.96 | 4.5: TDR 0.66, acc 0.93 | −0.16 |
-| Haiku | — | 4.5: TDR 0.76, acc 0.96 | (kept) |
-
-Both Opus and Sonnet **lost monitoring** in their latest 4.5 releases despite equal-or-higher accuracy. Haiku 4.5 retained it. This is direct, within-vendor, controlled evidence that the capability/monitoring trade-off was *actively trained in* between Opus 4.1 and Opus 4.5 — exactly what the RLHF-confidence-pressure hypothesis predicts. The benchmark thus produces a *mechanism-level* claim, not merely a correlation.
-
-**Cross-judge.** Claude-model responses (n = 150) re-judged by `claude-opus-4-5`. Weighted κ 0.65–0.97 across 6 dimensions; Pearson(judges) = 0.88. **Haiku #1 holds under both judges**. Cross-vendor pending.
-
-**Limitations.** (1) n = 7 — CIs wide but all non-null exclude zero, LOO-stable. (2) Primary judge `claude-sonnet-4-5`; cross-judge κ ≥ 0.65 on Anthropic subset. (3) Single author. (4) Uneven clean/mirage balance per family; correlating TDR against *global* accuracy is robust to this. (5) Correlation, not causation.
+**Honest limitations.** (a) **Single author** — 50 tasks reflect one person's "trap" taste; domain bias toward stats/logic; unfixable without recruiting authors. (b) **Same-vendor primary judge** — full cross-vendor pending API access. (c) **Generational sub-finding: n = 3 Opus / 2 Sonnet** — suggestive, not definitive. (d) **No human baseline** — relative comparisons only, absolute "good metacognition" un-anchored; v4 priority. (e) **Task contamination** — trap styles common in pretraining; models may recognize genre. (f) Correlation, not causation. (g) Uneven clean/mirage balance per family (robust under global-accuracy methodology).
 
 **Conclusion.** Sign-flip survives four statistical tests and LOO; pre-registered H0 rejected in opposite direction; mechanistic RLHF theory; counterexample (haiku); within-Anthropic generational regression directly observed.
 
