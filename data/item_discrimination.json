@@ -1,0 +1,102 @@
+{
+  "method": "Per-task spread (max \u2212 min total_score) across 3 Anthropic models with judge scores available (claude-haiku-4-5, claude-opus-4-5, claude-sonnet-4-5). High spread = task discriminates models; low spread = uniform signal.",
+  "n_tasks_analyzed": 50,
+  "mean_spread": 0.1176,
+  "max_spread": 0.6667,
+  "n_high_discrim": 10,
+  "n_med_discrim": 6,
+  "n_low_discrim": 34,
+  "top_10_discriminating": [
+    {
+      "task_id": "91d99eabdc",
+      "family": "expertise_trap",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.7778,
+      "variance": 0.1481,
+      "spread": 0.6667
+    },
+    {
+      "task_id": "abf4532a8c",
+      "family": "forced_abstention",
+      "variant": "abstain",
+      "n_models": 3,
+      "mean": 0.5555,
+      "variance": 0.1482,
+      "spread": 0.6667
+    },
+    {
+      "task_id": "b8376c732f",
+      "family": "forced_abstention",
+      "variant": "abstain",
+      "n_models": 3,
+      "mean": 0.6667,
+      "variance": 0.1111,
+      "spread": 0.6667
+    },
+    {
+      "task_id": "a34a258a00",
+      "family": "over_specification",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.3333,
+      "variance": 0.1111,
+      "spread": 0.6667
+    },
+    {
+      "task_id": "4234c2ffa1",
+      "family": "expertise_trap",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.4555,
+      "variance": 0.0915,
+      "spread": 0.5667
+    },
+    {
+      "task_id": "03e96e19ad",
+      "family": "confidence_inversion",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.5556,
+      "variance": 0.0864,
+      "spread": 0.5556
+    },
+    {
+      "task_id": "1fa7b2c88c",
+      "family": "expertise_trap",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.4555,
+      "variance": 0.037,
+      "spread": 0.3334
+    },
+    {
+      "task_id": "e4a095f39e",
+      "family": "confidence_inversion",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.4815,
+      "variance": 0.0288,
+      "spread": 0.3334
+    },
+    {
+      "task_id": "f537b83cbd",
+      "family": "over_specification",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.5926,
+      "variance": 0.0288,
+      "spread": 0.3334
+    },
+    {
+      "task_id": "6d056faf59",
+      "family": "over_specification",
+      "variant": "mirage",
+      "n_models": 3,
+      "mean": 0.5555,
+      "variance": 0.037,
+      "spread": 0.3334
+    }
+  ],
+  "interpretation": "10/50 tasks show high cross-model spread (\u22650.3), indicating real discriminating power at the item level. The benchmark is not saturated and individual items meaningfully separate models."
+}
