@@ -139,6 +139,12 @@
           <optgroup label="Sonnet lineage">
             <option value="claude-sonnet-4-20250514">claude-sonnet-4.0 (May 2025, MI 0.72)</option>
           </optgroup>
+          <optgroup label="Non-Anthropic (aggregate results only)">
+            <option value="gpt-4o-mini:agg">gpt-4o-mini (MI 0.574, TDR 84.5%)</option>
+            <option value="llama-3-70b:agg">llama-3-70b (MI 0.538, TDR 82.9%)</option>
+            <option value="gemini-1.5-pro:agg">gemini-1.5-pro (MI 0.508, TDR 77.2%)</option>
+            <option value="gpt-4o:agg">gpt-4o (MI 0.407, TDR 62.6%)</option>
+          </optgroup>
         </select>
       </div>
       <div>
@@ -304,8 +310,15 @@ function renderLeaderboard(userScore) {
 }
 
 // ── SIMULATED MODE ──
+const AGG_MODELS = {
+  'gpt-4o-mini:agg':    { name: 'gpt-4o-mini',    mi: 0.574, tdr: 0.845, acc: 0.759, calib: 0.303 },
+  'llama-3-70b:agg':    { name: 'llama-3-70b',     mi: 0.538, tdr: 0.829, acc: 0.648, calib: 0.246 },
+  'gemini-1.5-pro:agg': { name: 'gemini-1.5-pro',  mi: 0.508, tdr: 0.772, acc: 0.778, calib: 0.244 },
+  'gpt-4o:agg':         { name: 'gpt-4o',          mi: 0.407, tdr: 0.626, acc: 0.982, calib: 0.187 },
+};
+
 async function runSimulation() {
-  const model = document.getElementById('sim-model').value;
+  const modelRaw = document.getElementById('sim-model').value;
   const limit = parseInt(document.getElementById('sim-limit').value);
   const btn = document.getElementById('simBtn');
   btn.disabled = true;
@@ -314,6 +327,32 @@ async function runSimulation() {
   document.getElementById('log').style.display = 'block';
   document.getElementById('resultsCard').style.display = 'none';
 
+  // Handle aggregate-only models (non-Claude)
+  if (modelRaw.endsWith(':agg')) {
+    const agg = AGG_MODELS[modelRaw];
+    logLine('log-head', `${agg.name} — Aggregate Results from Published Evaluation`);
+    logLine('', '');
+    await sleep(600);
+    logLine('log-dim', `Per-task replay is only available for Anthropic models (we saved their raw responses).`);
+    logLine('log-dim', `${agg.name} was evaluated on all 50 tasks — here are the published aggregate results:\n`);
+    await sleep(400);
+    logLine('log-head', `  Metacognitive Index (MI):  ${agg.mi.toFixed(3)}`);
+    await sleep(300);
+    logLine('log-head', `  Trap Detection Rate:      ${(agg.tdr * 100).toFixed(1)}%`);
+    await sleep(300);
+    logLine('log-head', `  Clean Accuracy:           ${(agg.acc * 100).toFixed(1)}%`);
+    await sleep(300);
+    logLine('log-head', `  Calibration Delta:        +${agg.calib.toFixed(3)}`);
+    logLine('', '');
+    await sleep(400);
+    logLine('log-dim', `To see per-task scores, switch to an Anthropic model in the dropdown.`);
+    logLine('log-dim', `To run ${agg.name} LIVE with your own API key, use the "Live Run" tab.\n`);
+    renderLeaderboard(agg.mi);
+    btn.disabled = false; btn.textContent = '▶ Run Simulated Demo';
+    return;
+  }
+
+  const model = modelRaw;
   logLine('log-head', `Loading pre-recorded benchmark data for ${model}...`);
   let simData;
   try {
@@ -324,7 +363,7 @@ async function runSimulation() {
   }
   const records = simData[model] || [];
   if (!records.length) {
-    logLine('log-fail', `No simulation data available for ${model}.`);
+    logLine('log-fail', `No per-task simulation data found for ${model}. Try a different model.`);
     btn.disabled = false; btn.textContent = '▶ Run Simulated Demo'; return;
   }
   const subset = stratify(records, limit);
