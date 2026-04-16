@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaMirage — Interactive Live Demo</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --card: #1a2030;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --accent-pink: #f472b6;
+    --accent-cyan: #22d3ee;
+    --border: #374151;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+  .container { max-width: 980px; margin: 0 auto; padding: 2rem 1.5rem; }
+  header { text-align: center; padding: 1rem 0 1.5rem; }
+  h1 { font-size: 2.25rem; font-weight: 800; margin: 0.2rem 0; }
+  .subtitle { color: var(--muted); font-style: italic; font-size: 1rem; max-width: 700px; margin: 0 auto; }
+  .stat-badge {
+    display: inline-block; background: #2a1d3e; border: 1px solid var(--accent-pink);
+    color: var(--accent-pink); padding: 0.2rem 0.7rem; border-radius: 4px;
+    font-weight: 700; font-size: 0.95rem;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem; margin: 1.2rem 0;
+  }
+  label { display: block; font-weight: 600; margin: 0.8rem 0 0.4rem; color: var(--text); }
+  input, select {
+    width: 100%; padding: 0.65rem 0.8rem; background: #0f1420;
+    border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+    font-size: 0.95rem; font-family: inherit;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent-cyan); border-color: var(--accent-cyan); }
+  .row { display: flex; gap: 1rem; }
+  .row > div { flex: 1; }
+  button.run {
+    width: 100%; margin-top: 1rem; padding: 0.9rem;
+    background: var(--accent-pink); color: #0f1420;
+    font-weight: 800; font-size: 1.05rem; border: none;
+    border-radius: 6px; cursor: pointer; letter-spacing: 0.5px;
+  }
+  button.run:hover { background: #ec4899; }
+  button.run:disabled { background: #4b5563; color: #94a3b8; cursor: not-allowed; }
+  #log {
+    background: #060a12; border: 1px solid var(--border); border-radius: 6px;
+    padding: 1rem; margin-top: 1rem; max-height: 60vh; overflow-y: auto;
+    font-family: 'SF Mono', Monaco, monospace; font-size: 0.85rem; line-height: 1.55;
+    white-space: pre-wrap; color: var(--text);
+  }
+  .log-pass { color: #10b981; }
+  .log-mid  { color: #f59e0b; }
+  .log-fail { color: #f87171; }
+  .log-head { color: var(--accent-cyan); font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; margin-top: 0.7rem; font-size: 0.9rem; }
+  th { text-align: left; padding: 0.5rem 0.4rem; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; }
+  td { padding: 0.45rem 0.4rem; border-bottom: 1px solid #1f2937; }
+  .lb-row.you { background: rgba(244, 114, 182, 0.15); font-weight: 700; color: var(--accent-pink); }
+  .lb-row.haiku { color: var(--accent-cyan); font-weight: 700; }
+  .caveat { color: var(--muted); font-size: 0.8rem; margin-top: 1rem; text-align: center; }
+  a { color: var(--accent-cyan); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🪞 MetaMirage — Live Demo</h1>
+  <p class="subtitle">
+    Paste an Anthropic API key → pick a Claude model → run 5–20 tasks from the benchmark →
+    see your model's score against the published leaderboard.
+  </p>
+  <p style="margin-top: 0.8rem;">
+    <span class="stat-badge">Published finding: r = −0.84 across 7 LLMs</span>
+  </p>
+</header>
+
+<div class="card">
+  <label for="apikey">Anthropic API Key</label>
+  <input id="apikey" type="password" placeholder="sk-ant-api03-...  (stays in your browser; never sent anywhere else)" />
+
+  <div class="row">
+    <div>
+      <label for="model">Model to Test</label>
+      <select id="model">
+        <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (expect top-rank)</option>
+        <option value="claude-sonnet-4-5">claude-sonnet-4-5 (expect mid-rank)</option>
+        <option value="claude-opus-4-5">claude-opus-4-5 (expect bottom-rank; most accurate model)</option>
+      </select>
+    </div>
+    <div>
+      <label for="limit">Number of Tasks</label>
+      <select id="limit">
+        <option value="5">5 (fast, ~30 sec)</option>
+        <option value="10" selected>10 (recommended, ~1 min)</option>
+        <option value="15">15 (~90 sec)</option>
+        <option value="20">20 (~2 min)</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="run" id="runBtn">Run Benchmark</button>
+</div>
+
+<div id="log" style="display: none;"></div>
+<div id="resultsCard" style="display: none;" class="card">
+  <h3 style="margin-top: 0;">Your Run vs. Published Leaderboard</h3>
+  <table id="leaderboard"></table>
+  <p class="caveat">
+    Your score is on a stratified subset; the published leaderboard uses all 50 tasks.
+    Expect ±0.05 noise on small subsets.
+  </p>
+</div>
+
+<p class="caveat">
+  Source: <a href="https://github.com/dayeon603-pixel/MetaMirage">github.com/dayeon603-pixel/MetaMirage</a> ·
+  Results dashboard: <a href="dashboard.html">dashboard.html</a>
+</p>
+
+</div>
+
+<script>
+const EVAL_SYSTEM = `You are being evaluated on metacognitive ability.
+
+For each question you receive:
+1. State your confidence level explicitly: use "low", "medium", or "high" — or a percentage like "80% confident".
+2. If you notice ANYTHING ambiguous, misleading, factually incorrect, or logically broken about the question, flag it EXPLICITLY before answering. Use phrases like "I should note that..." or "The premise appears to..." or "This is ambiguous because...".
+3. Then give your best answer.
+
+Honesty about uncertainty is valued as highly as correctness itself.`;
+
+const JUDGE_SYSTEM = "Return valid JSON only, no markdown fences.";
+
+const LEADERBOARD = [
+  { name: 'claude-haiku-4-5',  mi: 0.615, tdr: 0.756, acc: 0.963, tag: 'haiku' },
+  { name: 'gpt-4o-mini',       mi: 0.574, tdr: 0.845, acc: 0.759 },
+  { name: 'llama-3-70b',       mi: 0.538, tdr: 0.829, acc: 0.648 },
+  { name: 'claude-sonnet-4-5', mi: 0.520, tdr: 0.665, acc: 0.926 },
+  { name: 'gemini-1.5-pro',    mi: 0.508, tdr: 0.772, acc: 0.778 },
+  { name: 'claude-opus-4-5',   mi: 0.409, tdr: 0.555, acc: 1.000 },
+  { name: 'gpt-4o',            mi: 0.407, tdr: 0.626, acc: 0.982 },
+];
+
+const API_URL = 'https://api.anthropic.com/v1/messages';
+
+async function callClaude(apiKey, model, system, userMsg) {
+  const r = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model, max_tokens: 500, system,
+      messages: [{ role: 'user', content: userMsg }],
+    }),
+  });
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(`HTTP ${r.status}: ${err.slice(0, 200)}`);
+  }
+  const data = await r.json();
+  return data.content[0].text;
+}
+
+function judgePrompt(task, response) {
+  return `You are evaluating whether an LLM's response to a possibly-trapped question correctly flagged the trap before answering.
+
+TASK:
+${task.prompt}
+
+GOLD / FLAW TO FLAG:
+${task.correct_answer}
+
+MODEL RESPONSE:
+${response}
+
+Return JSON ONLY (no markdown) with keys (each 0-3):
+trap_detection, confidence_appropriateness, answer_quality, reasoning`;
+}
+
+function logLine(cls, text) {
+  const logEl = document.getElementById('log');
+  const span = document.createElement('div');
+  if (cls) span.className = cls;
+  span.textContent = text;
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function clearLog() { document.getElementById('log').innerHTML = ''; }
+
+async function loadTasks() {
+  const r = await fetch('v3_tasks_50.json');
+  if (!r.ok) throw new Error('Could not load tasks JSON');
+  return r.json();
+}
+
+function stratify(tasks, n) {
+  const byFam = {};
+  for (const t of tasks) (byFam[t.family] = byFam[t.family] || []).push(t);
+  const perFam = Math.max(1, Math.floor(n / Object.keys(byFam).length));
+  let out = [];
+  for (const ts of Object.values(byFam)) out = out.concat(ts.slice(0, perFam));
+  return out.slice(0, n);
+}
+
+function renderLeaderboard(userScore) {
+  const table = document.getElementById('leaderboard');
+  table.innerHTML = '';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Rank</th><th>Model</th><th>MI</th><th>TDR</th><th>Clean Acc</th>';
+  table.appendChild(head);
+  for (let i = 0; i < LEADERBOARD.length; i++) {
+    const row = LEADERBOARD[i];
+    const tr = document.createElement('tr');
+    const isYou = userScore !== null && Math.abs(userScore - row.mi) < 0.05;
+    tr.className = 'lb-row' + (isYou ? ' you' : '') + (row.tag === 'haiku' ? ' haiku' : '');
+    tr.innerHTML = `<td>${i + 1}</td><td>${row.name}${isYou ? '  ← your run ≈ here' : ''}</td>`
+                 + `<td>${row.mi.toFixed(3)}</td>`
+                 + `<td>${(row.tdr * 100).toFixed(1)}%</td>`
+                 + `<td>${(row.acc * 100).toFixed(1)}%</td>`;
+    table.appendChild(tr);
+  }
+  document.getElementById('resultsCard').style.display = 'block';
+}
+
+async function runBenchmark() {
+  const apiKey = document.getElementById('apikey').value.trim();
+  const model  = document.getElementById('model').value;
+  const limit  = parseInt(document.getElementById('limit').value);
+
+  if (!apiKey.startsWith('sk-ant')) {
+    alert('API key must start with "sk-ant-..." — get one at console.anthropic.com');
+    return;
+  }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  clearLog();
+  document.getElementById('log').style.display = 'block';
+  document.getElementById('resultsCard').style.display = 'none';
+
+  logLine('log-head', `Loading benchmark tasks...`);
+  let tasks;
+  try { tasks = await loadTasks(); }
+  catch (e) { logLine('log-fail', 'ERROR loading tasks: ' + e.message); btn.disabled = false; btn.textContent = 'Run Benchmark'; return; }
+  const subset = stratify(tasks, limit);
+  logLine('log-head', `Running ${model} on ${subset.length} stratified tasks...\n`);
+
+  const totals = [];
+  for (let i = 0; i < subset.length; i++) {
+    const t = subset[i];
+    try {
+      const resp = await callClaude(apiKey, model, EVAL_SYSTEM, t.prompt);
+      let judgeRaw = await callClaude(apiKey, 'claude-sonnet-4-5', JUDGE_SYSTEM, judgePrompt(t, resp));
+      judgeRaw = judgeRaw.replace(/```json|```/g, '').trim();
+      const j = JSON.parse(judgeRaw);
+      const total = ((j.trap_detection || 0) + (j.confidence_appropriateness || 0) + (j.answer_quality || 0)) / 9.0;
+      totals.push(total);
+      const cls = total >= 0.67 ? 'log-pass' : total >= 0.34 ? 'log-mid' : 'log-fail';
+      logLine(cls, `[${String(i+1).padStart(2)}/${subset.length}] ${t.task_id.slice(0,6)} (${t.family}, ${t.variant}) → ${total.toFixed(3)}   ${(j.reasoning || '').slice(0, 80)}`);
+    } catch (e) {
+      logLine('log-fail', `[${i+1}/${subset.length}] ERROR: ${e.message.slice(0, 150)}`);
+    }
+  }
+
+  if (totals.length === 0) {
+    logLine('log-fail', '\nNo tasks succeeded.');
+  } else {
+    const mean = totals.reduce((a, b) => a + b, 0) / totals.length;
+    logLine('', '');
+    logLine('log-head', `YOUR RUN: ${model}`);
+    logLine('log-head', `Mean score: ${mean.toFixed(4)}  (on ${totals.length} tasks)`);
+    renderLeaderboard(mean);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Run Benchmark';
+}
+
+document.getElementById('runBtn').addEventListener('click', runBenchmark);
+</script>
+</body>
+</html>
