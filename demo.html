@@ -127,9 +127,18 @@
       <div>
         <label for="sim-model">Model to Replay</label>
         <select id="sim-model">
-          <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (top-ranked ★)</option>
-          <option value="claude-sonnet-4-5">claude-sonnet-4-5 (mid-ranked)</option>
-          <option value="claude-opus-4-5">claude-opus-4-5 (bottom-ranked; 100% accuracy)</option>
+          <optgroup label="Current-generation">
+            <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (top-ranked ★  MI 0.62)</option>
+            <option value="claude-sonnet-4-5">claude-sonnet-4-5 (MI 0.52)</option>
+            <option value="claude-opus-4-5">claude-opus-4-5 (100% accuracy, MI 0.41 ← worst monitor)</option>
+          </optgroup>
+          <optgroup label="Opus lineage — watch the regression">
+            <option value="claude-opus-4-20250514">claude-opus-4.0 (May 2025, MI 0.76)</option>
+            <option value="claude-opus-4-1-20250805">claude-opus-4.1 (Aug 2025, MI 0.74)</option>
+          </optgroup>
+          <optgroup label="Sonnet lineage">
+            <option value="claude-sonnet-4-20250514">claude-sonnet-4.0 (May 2025, MI 0.72)</option>
+          </optgroup>
         </select>
       </div>
       <div>
@@ -138,9 +147,13 @@
           <option value="5">5 tasks (~15 sec)</option>
           <option value="10" selected>10 tasks (~30 sec)</option>
           <option value="20">20 tasks (~1 min)</option>
+          <option value="50">50 tasks (full run, ~2 min)</option>
         </select>
       </div>
     </div>
+    <p class="vendor-note" style="margin-top: 0.5rem;">
+      <strong>Tip:</strong> Run the same N tasks on claude-opus-4.0 → 4.1 → 4.5 to see the <strong>within-vendor generational regression</strong> — Opus lost 32 TDR points across three releases at constant accuracy.
+    </p>
     <button class="run sim" id="simBtn">▶ Run Simulated Demo</button>
   </div>
 
