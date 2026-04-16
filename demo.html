@@ -34,7 +34,7 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 10px; padding: 1.5rem; margin: 1.2rem 0;
   }
-  label { display: block; font-weight: 600; margin: 0.8rem 0 0.4rem; color: var(--text); }
+  label { display: block; font-weight: 600; margin: 0.8rem 0 0.4rem; color: var(--text); font-size: 0.92rem; }
   input, select {
     width: 100%; padding: 0.65rem 0.8rem; background: #0f1420;
     border: 1px solid var(--border); border-radius: 6px; color: var(--text);
@@ -43,6 +43,7 @@
   input:focus, select:focus { outline: 2px solid var(--accent-cyan); border-color: var(--accent-cyan); }
   .row { display: flex; gap: 1rem; }
   .row > div { flex: 1; }
+  .optional-marker { color: var(--muted); font-weight: 500; font-size: 0.82rem; }
   button.run {
     width: 100%; margin-top: 1rem; padding: 0.9rem;
     background: var(--accent-pink); color: #0f1420;
@@ -68,6 +69,9 @@
   .lb-row.haiku { color: var(--accent-cyan); font-weight: 700; }
   .caveat { color: var(--muted); font-size: 0.8rem; margin-top: 1rem; text-align: center; }
   a { color: var(--accent-cyan); }
+  .vendor-note {
+    font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -76,7 +80,7 @@
 <header>
   <h1>🪞 MetaMirage — Live Demo</h1>
   <p class="subtitle">
-    Paste an Anthropic API key → pick a Claude model → run 5–20 tasks from the benchmark →
+    Paste your API keys → pick any of 5 frontier LLMs → run 5–20 tasks from the benchmark →
     see your model's score against the published leaderboard.
   </p>
   <p style="margin-top: 0.8rem;">
@@ -85,16 +89,31 @@
 </header>
 
 <div class="card">
-  <label for="apikey">Anthropic API Key</label>
-  <input id="apikey" type="password" placeholder="sk-ant-api03-...  (stays in your browser; never sent anywhere else)" />
+  <label for="anthropic-key">Anthropic API Key <span class="optional-marker">(required — used for the judge)</span></label>
+  <input id="anthropic-key" type="password" placeholder="sk-ant-api03-..." />
+
+  <label for="openai-key">OpenAI API Key <span class="optional-marker">(only if testing a GPT model)</span></label>
+  <input id="openai-key" type="password" placeholder="sk-proj-..." />
+
+  <p class="vendor-note">
+    <strong>Note:</strong> MetaMirage uses Claude Sonnet 4.5 as the scoring judge, so an Anthropic key is always needed.
+    Add an OpenAI key only if you want to test GPT models. Gemini and Llama aren't supported in the browser demo
+    (CORS limitations) — their results are on the published leaderboard below.
+  </p>
 
   <div class="row">
     <div>
       <label for="model">Model to Test</label>
       <select id="model">
-        <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (expect top-rank)</option>
-        <option value="claude-sonnet-4-5">claude-sonnet-4-5 (expect mid-rank)</option>
-        <option value="claude-opus-4-5">claude-opus-4-5 (expect bottom-rank; most accurate model)</option>
+        <optgroup label="Anthropic (always works)">
+          <option value="claude-haiku-4-5-20251001:anthropic">claude-haiku-4-5 — (top-ranked ★)</option>
+          <option value="claude-sonnet-4-5:anthropic">claude-sonnet-4-5</option>
+          <option value="claude-opus-4-5:anthropic">claude-opus-4-5 (most accurate; worst monitor)</option>
+        </optgroup>
+        <optgroup label="OpenAI (requires OpenAI key)">
+          <option value="gpt-4o-mini:openai">gpt-4o-mini</option>
+          <option value="gpt-4o:openai">gpt-4o</option>
+        </optgroup>
       </select>
     </div>
     <div>
@@ -116,14 +135,14 @@
   <h3 style="margin-top: 0;">Your Run vs. Published Leaderboard</h3>
   <table id="leaderboard"></table>
   <p class="caveat">
-    Your score is on a stratified subset; the published leaderboard uses all 50 tasks.
+    Your score is on a stratified subset; the published leaderboard uses all 50 tasks per model.
     Expect ±0.05 noise on small subsets.
   </p>
 </div>
 
 <p class="caveat">
   Source: <a href="https://github.com/dayeon603-pixel/MetaMirage">github.com/dayeon603-pixel/MetaMirage</a> ·
-  Results dashboard: <a href="dashboard.html">dashboard.html</a>
+  Full results dashboard: <a href="dashboard.html">dashboard.html</a>
 </p>
 
 </div>
@@ -150,10 +169,8 @@ const LEADERBOARD = [
   { name: 'gpt-4o',            mi: 0.407, tdr: 0.626, acc: 0.982 },
 ];
 
-const API_URL = 'https://api.anthropic.com/v1/messages';
-
-async function callClaude(apiKey, model, system, userMsg) {
-  const r = await fetch(API_URL, {
+async function callAnthropic(apiKey, model, system, userMsg) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -166,12 +183,35 @@ async function callClaude(apiKey, model, system, userMsg) {
       messages: [{ role: 'user', content: userMsg }],
     }),
   });
-  if (!r.ok) {
-    const err = await r.text();
-    throw new Error(`HTTP ${r.status}: ${err.slice(0, 200)}`);
-  }
+  if (!r.ok) throw new Error(`Anthropic HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);
   const data = await r.json();
   return data.content[0].text;
+}
+
+async function callOpenAI(apiKey, model, system, userMsg) {
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey,
+    },
+    body: JSON.stringify({
+      model, max_tokens: 500,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: userMsg },
+      ],
+    }),
+  });
+  if (!r.ok) throw new Error(`OpenAI HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const data = await r.json();
+  return data.choices[0].message.content;
+}
+
+async function callModel(provider, apiKeys, model, system, userMsg) {
+  if (provider === 'anthropic') return callAnthropic(apiKeys.anthropic, model, system, userMsg);
+  if (provider === 'openai')    return callOpenAI(apiKeys.openai, model, system, userMsg);
+  throw new Error('Unknown provider: ' + provider);
 }
 
 function judgePrompt(task, response) {
@@ -203,7 +243,7 @@ function clearLog() { document.getElementById('log').innerHTML = ''; }
 
 async function loadTasks() {
   const r = await fetch('v3_tasks_50.json');
-  if (!r.ok) throw new Error('Could not load tasks JSON');
+  if (!r.ok) throw new Error('Could not load tasks JSON (HTTP ' + r.status + ')');
   return r.json();
 }
 
@@ -216,7 +256,7 @@ function stratify(tasks, n) {
   return out.slice(0, n);
 }
 
-function renderLeaderboard(userScore) {
+function renderLeaderboard(userScore, userModel) {
   const table = document.getElementById('leaderboard');
   table.innerHTML = '';
   const head = document.createElement('tr');
@@ -237,14 +277,22 @@ function renderLeaderboard(userScore) {
 }
 
 async function runBenchmark() {
-  const apiKey = document.getElementById('apikey').value.trim();
-  const model  = document.getElementById('model').value;
-  const limit  = parseInt(document.getElementById('limit').value);
+  const anthropicKey = document.getElementById('anthropic-key').value.trim();
+  const openaiKey    = document.getElementById('openai-key').value.trim();
+  const modelSpec    = document.getElementById('model').value;
+  const limit        = parseInt(document.getElementById('limit').value);
+  const [model, provider] = modelSpec.split(':');
 
-  if (!apiKey.startsWith('sk-ant')) {
-    alert('API key must start with "sk-ant-..." — get one at console.anthropic.com');
+  if (!anthropicKey.startsWith('sk-ant')) {
+    alert('Anthropic API key (required for the judge) must start with "sk-ant-". Get one at console.anthropic.com/settings/keys');
     return;
   }
+  if (provider === 'openai' && !openaiKey.startsWith('sk-')) {
+    alert('To test an OpenAI model you must provide an OpenAI key that starts with "sk-". Get one at platform.openai.com/api-keys.');
+    return;
+  }
+
+  const apiKeys = { anthropic: anthropicKey, openai: openaiKey };
 
   const btn = document.getElementById('runBtn');
   btn.disabled = true;
@@ -253,19 +301,19 @@ async function runBenchmark() {
   document.getElementById('log').style.display = 'block';
   document.getElementById('resultsCard').style.display = 'none';
 
-  logLine('log-head', `Loading benchmark tasks...`);
+  logLine('log-head', `Loading benchmark tasks from GitHub...`);
   let tasks;
   try { tasks = await loadTasks(); }
-  catch (e) { logLine('log-fail', 'ERROR loading tasks: ' + e.message); btn.disabled = false; btn.textContent = 'Run Benchmark'; return; }
+  catch (e) { logLine('log-fail', 'ERROR: ' + e.message); btn.disabled = false; btn.textContent = 'Run Benchmark'; return; }
   const subset = stratify(tasks, limit);
-  logLine('log-head', `Running ${model} on ${subset.length} stratified tasks...\n`);
+  logLine('log-head', `Running ${model} (${provider}) on ${subset.length} stratified tasks...\n`);
 
   const totals = [];
   for (let i = 0; i < subset.length; i++) {
     const t = subset[i];
     try {
-      const resp = await callClaude(apiKey, model, EVAL_SYSTEM, t.prompt);
-      let judgeRaw = await callClaude(apiKey, 'claude-sonnet-4-5', JUDGE_SYSTEM, judgePrompt(t, resp));
+      const resp = await callModel(provider, apiKeys, model, EVAL_SYSTEM, t.prompt);
+      let judgeRaw = await callAnthropic(anthropicKey, 'claude-sonnet-4-5', JUDGE_SYSTEM, judgePrompt(t, resp));
       judgeRaw = judgeRaw.replace(/```json|```/g, '').trim();
       const j = JSON.parse(judgeRaw);
       const total = ((j.trap_detection || 0) + (j.confidence_appropriateness || 0) + (j.answer_quality || 0)) / 9.0;
@@ -273,18 +321,18 @@ async function runBenchmark() {
       const cls = total >= 0.67 ? 'log-pass' : total >= 0.34 ? 'log-mid' : 'log-fail';
       logLine(cls, `[${String(i+1).padStart(2)}/${subset.length}] ${t.task_id.slice(0,6)} (${t.family}, ${t.variant}) → ${total.toFixed(3)}   ${(j.reasoning || '').slice(0, 80)}`);
     } catch (e) {
-      logLine('log-fail', `[${i+1}/${subset.length}] ERROR: ${e.message.slice(0, 150)}`);
+      logLine('log-fail', `[${i+1}/${subset.length}] ERROR: ${e.message.slice(0, 180)}`);
     }
   }
 
   if (totals.length === 0) {
-    logLine('log-fail', '\nNo tasks succeeded.');
+    logLine('log-fail', '\nNo tasks succeeded. Check your API key(s).');
   } else {
     const mean = totals.reduce((a, b) => a + b, 0) / totals.length;
     logLine('', '');
-    logLine('log-head', `YOUR RUN: ${model}`);
+    logLine('log-head', `YOUR RUN:  ${model}`);
     logLine('log-head', `Mean score: ${mean.toFixed(4)}  (on ${totals.length} tasks)`);
-    renderLeaderboard(mean);
+    renderLeaderboard(mean, model);
   }
 
   btn.disabled = false;
