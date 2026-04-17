@@ -60,7 +60,7 @@ Dayeon Kang — independent submission.
 
 ### Technical Details
 
-**Repo:** https://github.com/dayeon603-pixel/MetaMirage. Key files: `v3_tasks_50.json`, `v3_judge_evaluator.py`, `v3_statistical_analysis.py` + `v3_robustness.py` + `v3_generational_analysis.py`, `v3_analysis.json`, `kaggle_task.py`, `dashboard.html`, `kaggle_submission.ipynb`, `cover_image.png`.
+**Repo:** https://github.com/dayeon603-pixel/MetaMirage. Key files: `v3_tasks_50.json`, `v3_judge_evaluator.py`, `v3_statistical_analysis.py` + `v3_robustness.py` + `v3_generational_analysis.py`, `v3_analysis.json`, `kaggle_task.py`, `dashboard.html` (includes live "Test Any LLM" runner — 200+ models via OpenRouter, no server), `kaggle_submission.ipynb`, `cover_image.png`, `metamirage_reward.py` (drop-in scalar reward for PPO/DPO — weights trap detection 50%, calibration 30%, answer quality 20%, counteracting RLHF confidence-pressure bias directly).
 
 **Methodology note.** Per-family TDR correlated against **global** clean accuracy — undefined within-family for families without clean pairs (see `v3_analysis.json.methodology_note`).
 

@@ -21,6 +21,7 @@ Progress toward AGI is currently measured by capability benchmarks that reward f
 - **The sign-flip result** — first empirical demonstration that TDR ⊥ accuracy, falsified on three independent task families (expertise_trap, forced_abstention, confidence_inversion).
 - **Three-mode scoring rubric** — `rubric`, `abstain_binary`, `expertise_inverted` capture qualitatively distinct metacognitive failure modes rather than collapsing them to one score.
 - **Fully reproducible harness** — 50 tasks in JSON, one-file evaluator, statistical analysis, interactive dashboard. No external data dependencies.
+- **RLHF reward function** — `metamirage_reward.py` is a drop-in scalar reward for PPO/DPO/REINFORCE loops. Weights trap detection at 50% (vs ~0% in standard RLHF), directly counteracting the confidence-pressure bias that causes the sign-flip. MetaMirage diagnoses the problem *and* provides the corrective training signal.
 
 ## TL;DR
 
@@ -33,7 +34,7 @@ Accuracy measures what a model knows. MetaMirage measures whether it knows when 
 ```bash
 git clone https://github.com/dayeon603-pixel/MetaMirage
 cd MetaMirage
-open dashboard.html          # no server needed — full interactive results
+open dashboard.html          # no server needed — full interactive results + "Test Any LLM" live runner
 pip install -r requirements.txt
 # Set ANTHROPIC_API_KEY, then:
 python v3_judge_evaluator.py     # ~15 min, ~$4 (reads cached data by default)
@@ -45,6 +46,14 @@ For local evaluation demo (no API key required):
 
 ```bash
 python kaggle_task.py --demo
+```
+
+To use MetaMirage as a training reward in an RLHF loop:
+
+```python
+from metamirage_reward import MetaMirageReward
+reward_fn = MetaMirageReward(tasks_file="v3_tasks_50.json")
+reward = reward_fn.score(prompt, model_response, task_meta)  # returns float in [0, 1]
 ```
 
 ---
@@ -131,10 +140,11 @@ metaMirage/
 ├── v3_analysis.json             # Full results from 7-model evaluation run
 ├── kaggle_task.py               # Kaggle Benchmarks SDK wrapper (loads v3_tasks_50.json)
 ├── kaggle_submission.ipynb      # Executed Kaggle notebook (all cells with outputs)
+├── metamirage_reward.py         # RLHF reward function — drop-in scalar reward for PPO/DPO loops
 ├── per_family_scatter.png       # Per-family TDR vs accuracy scatter (5-panel)
 ├── generational_regression.png  # Opus / Sonnet / Haiku TDR trajectory visualization
 ├── cover_image.png              # 1200×630 cover image for Kaggle submission
-├── dashboard.html               # Interactive results dashboard (self-contained HTML)
+├── dashboard.html               # Interactive results dashboard + "Test Any LLM" live runner (self-contained HTML; supports 200+ models via OpenRouter)
 ├── requirements.txt             # Python dependencies
 ├── hf_space/                    # Hugging Face Gradio demo (API-key-in-browser evaluation)
 │   ├── app.py                   # Gradio app — runs subset of benchmark in real-time
@@ -148,7 +158,7 @@ metaMirage/
 └── devlogs/                     # Session devlogs
 ```
 
-Open `dashboard.html` in any browser for an interactive visualization of the leaderboard, the sign-flip scatter plot, per-family correlations, and per-model metacognitive profiles. No server or dependencies required.
+Open `dashboard.html` in any browser for the full results visualization (leaderboard, sign-flip scatter, per-family correlations, per-model profiles) **plus a live "Test Any LLM" runner**. The runner supports any Anthropic model via your API key, and 200+ additional models (GPT-4o, Gemini, Llama, Mistral, DeepSeek, etc.) via a free [OpenRouter](https://openrouter.ai/keys) key. Keys stay in-browser; no server required. A simulated mode lets you replay all 7 tested models without any key.
 
 ### Judge Design
 
