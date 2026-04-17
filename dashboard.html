@@ -1182,7 +1182,7 @@ async function dRunLive(){
     document.getElementById('d-sum-pass').textContent=tots.filter(t=>t>=0.67).length+'/'+tots.length;
     document.getElementById('d-sum-fail').textContent=tots.filter(t=>t<0.34).length+'/'+tots.length;
     document.getElementById('d-sum-n').textContent=tots.length;
-    summary.style.display='block';dRenderLB(mean);
+    summary.style.display='block';dRenderLB(mean, model);
   }
   btn.disabled=false;btn.textContent='🔑 Run Live';
 }
@@ -1241,18 +1241,31 @@ function renderCard(i,total,r,tasks){
   </div>`;
 }
 
-function dRenderLB(score){
+function dRenderLB(score, modelName){
+  modelName = modelName || 'Your Model';
+  // Merge user's score into leaderboard at correct rank
+  const merged = D_LB.map(r=>({...r, isUser:false}));
+  if(score !== null && score !== undefined){
+    merged.push({name: modelName, mi: score, tdr: null, acc: null, isUser: true});
+  }
+  merged.sort((a,b) => b.mi - a.mi);
+
   const t=document.getElementById('d-leaderboard');t.innerHTML='';
   const h=document.createElement('tr');
   h.innerHTML='<th style="color:#8892a4;padding:0.4rem;border-bottom:1px solid #2a2d3e;">Rank</th><th style="color:#8892a4;padding:0.4rem;border-bottom:1px solid #2a2d3e;">Model</th><th style="color:#8892a4;padding:0.4rem;border-bottom:1px solid #2a2d3e;">MI</th><th style="color:#8892a4;padding:0.4rem;border-bottom:1px solid #2a2d3e;">TDR</th><th style="color:#8892a4;padding:0.4rem;border-bottom:1px solid #2a2d3e;">Acc</th>';
   t.appendChild(h);
-  for(let i=0;i<D_LB.length;i++){
-    const r=D_LB[i],tr=document.createElement('tr');
-    const isY=score!==null&&Math.abs(score-r.mi)<0.05;
-    tr.style.color=isY?'#f472b6':r.tag==='haiku'?'#22d3ee':'';
-    tr.style.fontWeight=isY||r.tag==='haiku'?'700':'';
-    if(isY)tr.style.background='rgba(244,114,182,0.12)';
-    tr.innerHTML=`<td style="padding:0.35rem;">${i+1}</td><td style="padding:0.35rem;">${r.name}${isY?' ← this run':''}${r.tag==='haiku'?' ★':''}</td><td style="padding:0.35rem;">${r.mi.toFixed(3)}</td><td style="padding:0.35rem;">${(r.tdr*100).toFixed(1)}%</td><td style="padding:0.35rem;">${(r.acc*100).toFixed(1)}%</td>`;
+  for(let i=0;i<merged.length;i++){
+    const r=merged[i], tr=document.createElement('tr');
+    if(r.isUser){
+      tr.style.background='rgba(244,114,182,0.18)';
+      tr.style.color='#f472b6';
+      tr.style.fontWeight='800';
+      tr.innerHTML=`<td style="padding:0.45rem;font-size:1.05rem;">→ ${i+1}</td><td style="padding:0.45rem;font-size:1.05rem;">🆕 ${r.name}</td><td style="padding:0.45rem;font-size:1.05rem;">${r.mi.toFixed(3)}</td><td style="padding:0.45rem;color:var(--muted);">—</td><td style="padding:0.45rem;color:var(--muted);">—</td>`;
+    } else {
+      tr.style.color=r.tag==='haiku'?'#22d3ee':'';
+      tr.style.fontWeight=r.tag==='haiku'?'700':'';
+      tr.innerHTML=`<td style="padding:0.35rem;">${i+1}</td><td style="padding:0.35rem;">${r.name}${r.tag==='haiku'?' ★':''}</td><td style="padding:0.35rem;">${r.mi.toFixed(3)}</td><td style="padding:0.35rem;">${r.tdr!==null?(r.tdr*100).toFixed(1)+'%':'—'}</td><td style="padding:0.35rem;">${r.acc!==null?(r.acc*100).toFixed(1)+'%':'—'}</td>`;
+    }
     t.appendChild(tr);
   }
 }
