@@ -1320,7 +1320,7 @@ async function dRunVisual(){
   document.getElementById('d-sum-fail').textContent=fail+'/'+tots.length;
   document.getElementById('d-sum-n').textContent=tots.length;
   summary.style.display='block';
-  dRenderLB(mean);
+  dRenderLB(mean, model);
 
   btn.disabled=false;btn.textContent='▶ Run Benchmark';
 }
