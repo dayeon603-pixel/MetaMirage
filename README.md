@@ -201,13 +201,13 @@ This is the central finding: **the two most accurate models (claude-opus-4-5 at 
 
 Per-family TDR is correlated against **global** clean-answer accuracy (`aq_clean` over all 50 tasks) — the stable capability axis. An earlier methodology correlated family TDR against *within-family* clean accuracy, which produced degenerate r = 0 artifacts in families that have no clean-pair tasks; the correction is documented in `v3_analysis.json.methodology_note`.
 
-| Family | TDR vs. Accuracy r | 95% CI | p | Interpretation |
-|--------|-------------------|--------|---|----------------|
-| confidence_inversion | **+0.89** | [+0.42, +0.98] | 0.007 | permP = 0.023 — capability helps on direct calibration |
-| expertise_trap | **−0.79** | [−0.97, −0.09] | 0.035 | permP = 0.042 — domain knowledge becomes a trap |
-| forced_abstention | **−0.81** | [−0.97, −0.14] | 0.028 | permP = 0.039 — capable models fail to abstain |
-| over_specification | +0.04 | [−0.73, +0.77] | 0.93 | permP = 0.96 — null confirmed nonparametrically |
-| control_baseline | n/a | — | — | Degenerate by design (no mirage variant; no TDR signal) |
+| Family | r | Fisher 95% CI | t-p | Bootstrap 95% CI | perm-p | Finding |
+|--------|---|---------------|-----|------------------|--------|---------|
+| confidence_inversion | **+0.89** | [+0.42, +0.98] | 0.007 | [+0.72, +1.00] | 0.023 | capability helps calibration |
+| expertise_trap | **−0.79** | [−0.97, −0.09] | 0.035 | [−0.98, −0.50] | 0.042 | domain knowledge is a trap |
+| forced_abstention | **−0.81** | [−0.97, −0.14] | 0.028 | [−1.00, −0.56] | 0.039 | capable models fail to abstain |
+| over_specification | +0.04 | [−0.73, +0.77] | 0.93 | [−0.89, +0.95] | 0.955 | null confirmed nonparametrically |
+| control_baseline | n/a | — | — | — | — | degenerate (no mirage variant) |
 
 **Three independent families flip the sign.** Non-null CIs all exclude zero, and `expertise_trap` — borderline under the earlier methodology (r = −0.56, p = 0.18) — emerges as a headline result under the corrected, properly-scaled capability axis. `confidence_inversion` is the *only* family where capability helps; `forced_abstention` and `expertise_trap` show the opposite. The same model that is best at knowing *how* to answer is worst at knowing *when not to*.
 
